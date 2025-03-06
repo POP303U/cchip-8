@@ -1,5 +1,6 @@
 #include "lib/cchip8.h"
 #include "lib/tests.h"
+#include "lib/font.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -7,6 +8,7 @@
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 
+#define GET_BIT(p, n) ((((uint8_t *)p)[n/8] >> (n%8)) & 0x01)
 #define ROM_START 0x200
 #define BYTE unsigned char
 #define FB_WIDTH 64
@@ -48,13 +50,26 @@ int main(void) {
   // Create a cpu
   struct Chip8 chip8 = Chip8CreateCpu();
 
-  // Map Rom to memory space
+  // Map Rom/Font into memory space
   Chip8MapRom(&chip8, rom, sz);
+  Chip8MapFont(&chip8, font);
 
-  uint8_t framebuffer[64 * 32] = {0};
-    for (ulong i = 0; i < sz; i++) {
-      framebuffer[i] = rom[i];
-    }
+  // Debug
+  Chip8DumpMem(&chip8);
+
+  bool framebuffer[64 * 32] = {0};
+
+  int idx = 0;
+  int j = 7;
+  for (int i = 0; i < 5; i++) {
+      idx = i * 64;
+      for (j = 7; j >= 0; j--) {
+          framebuffer[idx] = GET_BIT(font, i + j);
+          printf("%i", GET_BIT(font, i + j));
+          idx++;
+      }
+      printf(" : %d \n", idx);
+  }
 
   while (true) {
     SDL_PollEvent(&event);
@@ -71,7 +86,7 @@ int main(void) {
       for (int x = 0; x < FB_WIDTH; x++) {
         if (framebuffer[y * FB_WIDTH + x]) {
           SDL_Rect rect = {x * SCALE, y * SCALE, SCALE, SCALE};
-          SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green
+          SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Green
           SDL_RenderFillRect(renderer, &rect);
         }
       }
