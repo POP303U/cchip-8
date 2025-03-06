@@ -6,11 +6,6 @@
 #define FB_WIDTH 64
 #define FB_HEIGHT 32
 
-void TEST_framebuffer_cross(uint8_t framebuffer[]) {
-  // Clear framebuffer
-  memset(framebuffer, 0, FB_WIDTH * FB_HEIGHT);
-}
-
 void TEST_framebuffer_smile(uint8_t framebuffer[]) {
   framebuffer[64 * 16 + 28] = true;
   framebuffer[64 * 16 + 32] = true;
@@ -28,4 +23,18 @@ void TEST_framebuffer_smile(uint8_t framebuffer[]) {
          2047 / FB_WIDTH);
 }
 
-void fbSetPixel(uint8_t fb[], int x, int y, bool pixel) { fb[x * y] = pixel; }
+//void fbSetPixel(uint8_t *fb[], int x, int y, bool pixel) { fb[x * y] = pixel; }
+
+void romToBin(uint8_t *buf, int bytes_to_read) {
+    for (int i = 0; i < bytes_to_read; i++) {
+        uint8_t byte = buf[i];
+//        printf("hex: %02X, dec: %03d, bin:", byte, byte);  
+
+        for (int bit = 0; bit < 8; bit++) {
+//            printf("%i", byte & 0X01);
+            byte >>= 1;
+        }
+//       printf("\n");
+    }
+}
+
