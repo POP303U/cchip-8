@@ -1,13 +1,13 @@
 #include "lib/cchip8.h"
-#include "lib/rom.h"
 #include "lib/tests.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_rect.h>
-#include <SDL2/SDL_render.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_rect.h>
+#include <SDL2/SDL_render.h>
 
+#define ROM_START 0x200
 #define BYTE unsigned char
 #define FB_WIDTH 64
 #define FB_HEIGHT 32
@@ -16,29 +16,6 @@
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_Event event;
-
-// This sadly has to be here so c loads it first
-typedef struct Chip8 {
-  // Memory space
-  uint8_t memory[4096];
-
-  // 16x8 Bytes V0-VF
-  uint8_t V[16];
-
-  // 64 Byte stack
-  uint8_t stack[64];
-
-  // Framebuffer
-  uint8_t framebuffer[64 * 32];
-
-  // Registers
-  uint16_t I;
-  uint16_t PC;
-  uint8_t SP;
-  uint8_t soundTimer;
-  uint8_t delayReg;
-
-} Chip8;
 
 int main(void) {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -69,17 +46,15 @@ int main(void) {
   ulong sz = Chip8RomSize("rom.ch8");
 
   // Create a cpu
-  Chip8 cpu = Chip8CreateCpu();
+  struct Chip8 chip8 = Chip8CreateCpu();
 
   // Map Rom to memory space
-  Chip8MapRom(cpu, rom, sz);
+  Chip8MapRom(&chip8, rom, sz);
 
   uint8_t framebuffer[64 * 32] = {0};
-  TEST_framebuffer_smile(framebuffer);
-
-  //  for (int i = 0x200; i < 0x400; i++) {
-  //    printf("cpu adr: %X %s\n", i, &cpu.memory[i]);
-  //  }
+    for (ulong i = 0; i < sz; i++) {
+      framebuffer[i] = rom[i];
+    }
 
   while (true) {
     SDL_PollEvent(&event);
