@@ -1,7 +1,7 @@
 CC = gcc
 # i hate how these compiler options come from gcc bugs
 CFLAGS = -Wall -Wextra -Wno-missing-braces -Wno-missing-field-initializers -O2
-SRC = main.c lib/cchip8.c lib/tests.c
+SRC = main.c lib/cchip8.c lib/tests.c lib/font.c
 OBJ = $(SRC:.c=.o)
 OUT = chip8
 
