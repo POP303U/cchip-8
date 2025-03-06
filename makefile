@@ -1,6 +1,7 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -O2
-SRC = main.c lib/rom.c lib/cchip8.c lib/tests.c
+# i hate how these compiler options come from gcc bugs
+CFLAGS = -Wall -Wextra -Wno-missing-braces -Wno-missing-field-initializers -O2
+SRC = main.c lib/cchip8.c lib/tests.c
 OBJ = $(SRC:.c=.o)
 OUT = chip8
 
