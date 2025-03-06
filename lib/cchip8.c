@@ -16,8 +16,18 @@ struct Chip8 Chip8CreateCpu() {
 }
 
 void Chip8MapRom(struct Chip8 *chip8, uint8_t *rom, ulong size) {
+    // Map rom into chip8 starting from 0x200
     for (ulong i = ROM_START; i < (ROM_START + size); i++) {
       chip8->memory[i] = rom[i - ROM_START];
+      // moving around memory like this is hard
+      // printf("chip8->memory[%02X] = rom[%02X], val(%02X)\n", ROM_START + i, i - ROM_START, chip8->memory[i]);
+    }
+}
+
+void Chip8MapFont(struct Chip8 *chip8, const uint8_t *font) {
+    // Map font into chip8 starting from 0x000
+    for (ulong i = 0x000; i < ROM_START; i++) {
+      chip8->memory[i] = font[i];
       // moving around memory like this is hard
       // printf("chip8->memory[%02X] = rom[%02X], val(%02X)\n", ROM_START + i, i - ROM_START, chip8->memory[i]);
     }
@@ -67,4 +77,18 @@ uint8_t *Chip8ReadRom(const char *filename) {
 
   free(buf);
   return ret;
+}
+
+void Chip8DumpMem(struct Chip8 *chip8) {
+    int idx = 0;
+    for (int i = 0; i <= 0x200; i++) {
+        printf("0x%03X ", i * 16); 
+        for (int j = 0; j <= 8; j++) {
+            printf("%02X%02X ", chip8->memory[idx], chip8->memory[idx + 1]);
+            idx++;
+        }
+        printf("\n");
+        if (idx >= 0x900)
+            break;
+    }
 }

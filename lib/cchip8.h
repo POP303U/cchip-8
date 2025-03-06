@@ -36,5 +36,12 @@ ulong Chip8RomSize(const char *filename);
 
 // Rom and memory mapping
 void Chip8MapRom(Chip8 *chip8, uint8_t *rom, ulong size);
+void Chip8MapFont(Chip8 *chip8, const uint8_t *font);
+void Chip8DumpMem(Chip8 *chip8);
+
+// CPU execution cycle: FDE (Fetch, Decode, Execute)
+void Chip8FetchInstruction(Chip8 *chip8);
+void Chip8DecodeInstruction(Chip8 *chip8);
+void Chip8ExecuteInstruction(Chip8 *chip8);
 
 #endif
