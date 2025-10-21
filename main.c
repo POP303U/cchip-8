@@ -1,4 +1,6 @@
+#include "lib/cchip8.h"
 #include "lib/rom.h"
+#include "lib/tests.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
@@ -6,14 +8,16 @@
 #include <stdint.h>
 #include <stdio.h>
 
-const uint8_t FB_WIDTH = 64;
-const uint8_t FB_HEIGHT = 32;
-const uint8_t SCALE = 20;
+#define BYTE unsigned char
+#define FB_WIDTH 64
+#define FB_HEIGHT 32
+#define SCALE 20
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_Event event;
 
+// This sadly has to be here so c loads it first
 typedef struct Chip8 {
   // Memory space
   uint8_t memory[4096];
@@ -35,30 +39,6 @@ typedef struct Chip8 {
   uint8_t delayReg;
 
 } Chip8;
-
-void TEST_framebuffer_cross(uint8_t framebuffer[]) {
-  // Clear framebuffer
-  memset(framebuffer, 0, FB_WIDTH * FB_HEIGHT);
-}
-
-void TEST_framebuffer_smile(uint8_t framebuffer[]) {
-  framebuffer[64 * 16 + 28] = true;
-  framebuffer[64 * 16 + 32] = true;
-
-  framebuffer[64 * 19 + 27] = true;
-  framebuffer[64 * 20 + 28] = true;
-  framebuffer[64 * 20 + 29] = true;
-  framebuffer[64 * 20 + 30] = true;
-  framebuffer[64 * 20 + 31] = true;
-  framebuffer[64 * 20 + 32] = true;
-  framebuffer[64 * 19 + 33] = true;
-
-  // If fb looping works: Framebuffer index 2047 => x=63, y=31
-  printf("Framebuffer index 2047 => x=%d, y=%d\n", 2047 % FB_WIDTH,
-         2047 / FB_WIDTH);
-}
-
-void fbSetPixel(uint8_t fb[], int x, int y, bool pixel) { fb[x * y] = pixel; }
 
 int main(void) {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -82,15 +62,26 @@ int main(void) {
   // Set render color to green ( rect will be rendered in this color )
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-  // TESTS
+  // STARTUP
+
+  // Read rom file and get size
+  uint8_t *rom = Chip8ReadRom("rom.ch8");
+  ulong sz = Chip8RomSize("rom.ch8");
+
+  // Create a cpu
+  Chip8 cpu = Chip8CreateCpu();
+
+  // Map Rom to memory space
+  Chip8MapRom(cpu, rom, sz);
+
   uint8_t framebuffer[64 * 32] = {0};
   TEST_framebuffer_smile(framebuffer);
-  // TEST_framebuffer_cross(framebuffer);
 
-  // Read Rom into memory
-  Chip8ReadRom("rom.ch8");
+  //  for (int i = 0x200; i < 0x400; i++) {
+  //    printf("cpu adr: %X %s\n", i, &cpu.memory[i]);
+  //  }
 
-  while (1) {
+  while (true) {
     SDL_PollEvent(&event);
     if (event.type == SDL_QUIT) {
       break;
@@ -110,6 +101,8 @@ int main(void) {
         }
       }
     } // End draw
+
+    // Load ROM into 0x200 (Start of Chip-8 Programs)
 
     SDL_RenderPresent(renderer);
     SDL_Delay(16); // ~60 FPS
