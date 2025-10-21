@@ -6,6 +6,20 @@
 #define BINARY_READ "rb"
 #define BYTE unsigned char
 
+ulong Chip8RomSize(const char *filename) {
+  FILE *fptr = fopen(filename, BINARY_READ);
+
+  // Get the file size
+  fseek(fptr, 0L, SEEK_END);
+  long sz = ftell(fptr);
+  fseek(fptr, 0L, SEEK_SET);
+  rewind(fptr);
+
+  fclose(fptr);
+
+  return sz;
+}
+
 BYTE *Chip8ReadRom(const char *filename) {
   FILE *fptr = fopen(filename, BINARY_READ);
 
@@ -13,12 +27,7 @@ BYTE *Chip8ReadRom(const char *filename) {
     exit(-1);
   }
 
-  // Get the file size
-  fseek(fptr, 0L, SEEK_END);
-  long sz = ftell(fptr);
-  fseek(fptr, 0L, SEEK_SET);
-  rewind(fptr);
-  printf("fptr length: %0lu\n", sz);
+  u_int16_t sz = Chip8RomSize(filename);
 
   // Read into buf until eof
   BYTE *buf = malloc(sz);
@@ -31,10 +40,10 @@ BYTE *Chip8ReadRom(const char *filename) {
     return NULL;
   }
 
-  for (int i = 0; i < sz; i++) {
-    ret[i] = buf[i];
-    printf("%02X", buf[i]);
-  }
+  //  for (u_int16_t i = 0; i < sz; i++) {
+  //    ret[i] = buf[i];
+  //    printf("%02X", buf[i]);
+  //  }
 
   free(buf);
   return ret;
