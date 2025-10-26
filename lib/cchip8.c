@@ -1,36 +1,80 @@
 #include "cchip8.h"
+#include "font.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 #define ROM_START 0x200
+#define FONT_START 0x50
+#define FONTSET_SIZE 80
 #define BINARY_READ "rb"
 
-struct Chip8 Chip8CreateCpu() {
-  uint8_t mem[4096] = {0};
-  uint8_t vx[16] = {0};
-  uint8_t stack[64] = {0};
-  uint8_t fb[64 * 32] = {0};
+Chip8 *Chip8InitCpu() {
+  Chip8 *chip8 = malloc(sizeof(Chip8));
 
-  struct Chip8 ret = {mem[4096 - 1], vx[16 - 1], stack[64 - 1], fb[2048 - 1], 0, 0, 0, 0, 0};
-  return ret;
+  memset(chip8, 0, sizeof(Chip8));
+  if (chip8 == NULL) {
+    fprintf(stderr, "Chip8InitCpu: could not alloc");
+  }
+
+  chip8->I = 0;
+  chip8->PC = 0x200; // Execution starts at 0x200
+  chip8->SP = 0;
+  chip8->soundTimer = 0;
+  chip8->delayReg = 0;
+
+  // Load Font into memory
+  for (int i = 0; i < FONTSET_SIZE; i++) {
+    chip8->memory[i + FONT_START] = font[i];
+  }
+
+  // RNG for chip8
+  srand(time(NULL));
+
+  return chip8;
 }
 
-void Chip8MapRom(struct Chip8 *chip8, uint8_t *rom, ulong size) {
-    // Map rom into chip8 starting from 0x200
-    for (ulong i = ROM_START; i < (ROM_START + size); i++) {
-      chip8->memory[i] = rom[i - ROM_START];
-      // moving around memory like this is hard
-      // printf("chip8->memory[%02X] = rom[%02X], val(%02X)\n", ROM_START + i, i - ROM_START, chip8->memory[i]);
-    }
+// CPU execution cycle: FDE (Fetch, Decode, Execute)
+uint16_t Chip8FetchInstruction(Chip8 *chip8) {
+  uint8_t addr0 = chip8->memory[chip8->PC];
+  uint8_t addr1 = chip8->memory[chip8->PC + 0x01];
+
+  // shift two bytes into a short
+  return ((uint16_t)addr0 << 8) | addr1;
 }
 
-void Chip8MapFont(struct Chip8 *chip8, const uint8_t *font) {
-    // Map font into chip8 starting from 0x000
-    for (ulong i = 0x000; i < ROM_START; i++) {
-      chip8->memory[i] = font[i];
-      // moving around memory like this is hard
-      // printf("chip8->memory[%02X] = rom[%02X], val(%02X)\n", ROM_START + i, i - ROM_START, chip8->memory[i]);
-    }
+void Chip8DecodeInstruction(Chip8 *chip8, uint16_t opcode) {
+  // All of this is just extraction of values from opcodes
+  uint16_t nnn = opcode & 0x0FFF;
+  uint16_t n = opcode & 0x000F;
+  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t y = (opcode & 0x00F0) >> 4;
+  uint16_t kk = opcode & 0x00FF;
+  uint16_t lbit_opcode = (opcode & 0xF000) >> 12;
+
+  // Preincrement PC
+  chip8->PC += 2;
+
+  // For opcodes with a unique left byte
+  switch (lbit_opcode) {
+  default:
+    printf("lbit: %X\n ", lbit_opcode);
+    break;
+  }
+}
+void Chip8ExecuteInstruction(Chip8 *chip8);
+void Chip8UpdateState(Chip8 *chip8);
+
+void Chip8LoadRom(struct Chip8 *chip8, uint8_t *rom, ulong size) {
+  // Map rom into chip8 starting from 0x200
+  for (ulong i = ROM_START; i < (ROM_START + size); i++) {
+    chip8->memory[i] = rom[i - ROM_START];
+    // moving around memory like this is hard
+    // printf("chip8->memory[%02X] = rom[%02X], val(%02X)\n", ROM_START + i, i
+    // - ROM_START, chip8->memory[i]);
+  }
 }
 
 ulong Chip8RomSize(const char *filename) {
@@ -80,15 +124,15 @@ uint8_t *Chip8ReadRom(const char *filename) {
 }
 
 void Chip8DumpMem(struct Chip8 *chip8) {
-    int idx = 0;
-    for (int i = 0; i <= 0x200; i++) {
-        printf("0x%03X ", i * 16); 
-        for (int j = 0; j <= 8; j++) {
-            printf("%02X%02X ", chip8->memory[idx], chip8->memory[idx + 1]);
-            idx++;
-        }
-        printf("\n");
-        if (idx >= 0x900)
-            break;
+  int idx = 0;
+  for (int i = 0; i <= 0x200; i++) {
+    printf("0x%03X ", i * 16);
+    for (int j = 0; j < 16; j++) {
+      printf("%02X ", chip8->memory[idx]);
+      idx++;
     }
+    printf("\n");
+    if (idx >= 0x900)
+      break;
+  }
 }

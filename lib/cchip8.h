@@ -28,20 +28,22 @@ typedef struct Chip8 {
 } Chip8;
 
 // Set up the Chip-8 struct and memory space for usage
-struct Chip8 Chip8CreateCpu();
+Chip8 *Chip8InitCpu();
 
 // File reading and creating a rom buffer
 uint8_t *Chip8ReadRom(const char *filename);
 ulong Chip8RomSize(const char *filename);
 
 // Rom and memory mapping
-void Chip8MapRom(Chip8 *chip8, uint8_t *rom, ulong size);
-void Chip8MapFont(Chip8 *chip8, const uint8_t *font);
+void Chip8LoadRom(Chip8 *chip8, uint8_t *rom, ulong size);
 void Chip8DumpMem(Chip8 *chip8);
 
 // CPU execution cycle: FDE (Fetch, Decode, Execute)
-void Chip8FetchInstruction(Chip8 *chip8);
-void Chip8DecodeInstruction(Chip8 *chip8);
+// Fetch: Returns the current executing hex bytes like: 0xA2B4
+// Decode: Destructs hex bytes (from fetch) into instruction calls and variables
+uint16_t Chip8FetchInstruction(Chip8 *chip8);
+void Chip8DecodeInstruction(Chip8 *chip8, uint16_t opcode);
 void Chip8ExecuteInstruction(Chip8 *chip8);
+void Chip8UpdateState(Chip8 *chip8);
 
 #endif
