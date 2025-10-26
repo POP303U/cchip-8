@@ -1,14 +1,13 @@
 #include "lib/cchip8.h"
-#include "lib/tests.h"
 #include "lib/font.h"
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
+#include "lib/tests.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
+#include <stdbool.h>
+#include <stdint.h>
 
-#define GET_BIT(p, n) ((((uint8_t *)p)[n/8] >> (n%8)) & 0x01)
+#define GET_BIT(p, n) ((((uint8_t *)p)[n / 8] >> (n % 8)) & 0x01)
 #define ROM_START 0x200
 #define BYTE unsigned char
 #define FB_WIDTH 64
@@ -41,41 +40,32 @@ int main(void) {
   // Set render color to green ( rect will be rendered in this color )
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-  // STARTUP
+  // CHIP-8 STARTUP
 
   // Read rom file and get size
   uint8_t *rom = Chip8ReadRom("rom.ch8");
   ulong sz = Chip8RomSize("rom.ch8");
 
-  // Create a cpu
-  struct Chip8 chip8 = Chip8CreateCpu();
+  // Create a cpu initiating values + font
+  Chip8 *chip8 = Chip8InitCpu();
 
-  // Map Rom/Font into memory space
-  Chip8MapRom(&chip8, rom, sz);
-  Chip8MapFont(&chip8, font);
+  // Map Rom into memory space
+  Chip8LoadRom(chip8, rom, sz);
 
   // Debug
-  Chip8DumpMem(&chip8);
+  Chip8DumpMem(chip8);
 
-  bool framebuffer[64 * 32] = {0};
-
-  int idx = 0;
-  int j = 7;
-  for (int i = 0; i < 5; i++) {
-      idx = i * 64;
-      for (j = 7; j >= 0; j--) {
-          framebuffer[idx] = GET_BIT(font, i + j);
-          printf("%i", GET_BIT(font, i + j));
-          idx++;
-      }
-      printf(" : %d \n", idx);
-  }
+  uint8_t framebuffer[64 * 32] = {0};
+  TEST_framebuffer_smile(framebuffer);
 
   while (true) {
     SDL_PollEvent(&event);
     if (event.type == SDL_QUIT) {
       break;
     }
+
+    uint16_t opcode = Chip8FetchInstruction(chip8);
+    Chip8DecodeInstruction(chip8, opcode);
 
     // Begin draw
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -91,8 +81,6 @@ int main(void) {
         }
       }
     } // End draw
-
-    // Load ROM into 0x200 (Start of Chip-8 Programs)
 
     SDL_RenderPresent(renderer);
     SDL_Delay(16); // ~60 FPS
