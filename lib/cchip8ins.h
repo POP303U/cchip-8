@@ -1,11 +1,19 @@
+#include "cchip8.h"
 #include <stdint.h>
 #include <stdlib.h>
 
 #ifndef CCHIP8INS_H_
 #define CCHIP8INS_H_
 
-void Chip8_0NNN(Chip8 *chip8); 
-void Chip8_00E0(Chip8 *chip8); 
+typedef void (*Chip8Instruction)(Chip8 *chip8); // Readability
+
+// Funcptr array for repeated instructions
+extern const Chip8Instruction chip8insTable[];
+
+// This instruction is ignored by modern interpreters
+void Chip8_0NNN(Chip8 *chip8);
+
+void Chip8_00E0(Chip8 *chip8);
 void Chip8_00EE(Chip8 *chip8);
 void Chip8_1NNN(Chip8 *chip8);
 void Chip8_2NNN(Chip8 *chip8);
@@ -38,6 +46,6 @@ void Chip8_FX1E(Chip8 *chip8);
 void Chip8_FX29(Chip8 *chip8);
 void Chip8_FX33(Chip8 *chip8);
 void Chip8_FX55(Chip8 *chip8);
-void Chip8_FX65(Chip8 *chip8); 
+void Chip8_FX65(Chip8 *chip8);
 
 #endif
