@@ -1,4 +1,5 @@
 #include "lib/cchip8.h"
+#include "lib/cchip8ins.h"
 #include "lib/font.h"
 #include "lib/tests.h"
 #include <SDL2/SDL.h>
@@ -55,9 +56,9 @@ int main(void) {
   // Debug
   Chip8DumpMem(chip8);
 
-  uint8_t framebuffer[64 * 32] = {0};
-  TEST_framebuffer_smile(framebuffer);
+  TEST_framebuffer_smile(chip8);
 
+  bool test = true;
   while (true) {
     SDL_PollEvent(&event);
     if (event.type == SDL_QUIT) {
@@ -74,7 +75,7 @@ int main(void) {
     // Draw framebuffer
     for (int y = 0; y < FB_HEIGHT; y++) {
       for (int x = 0; x < FB_WIDTH; x++) {
-        if (framebuffer[y * FB_WIDTH + x]) {
+        if (chip8->framebuffer[y * FB_WIDTH + x]) {
           SDL_Rect rect = {x * SCALE, y * SCALE, SCALE, SCALE};
           SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Green
           SDL_RenderFillRect(renderer, &rect);
@@ -83,7 +84,14 @@ int main(void) {
     } // End draw
 
     SDL_RenderPresent(renderer);
-    SDL_Delay(16); // ~60 FPS
+    SDL_Delay(16 * 5); // ~60 FPS
+    if (test) {
+      test = false;
+      Chip8_00E0(chip8);
+    } else {
+      test = true;
+      TEST_framebuffer_smile(chip8);
+    }
   }
 
   SDL_DestroyRenderer(renderer);
