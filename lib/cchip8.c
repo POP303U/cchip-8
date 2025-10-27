@@ -115,7 +115,7 @@ uint8_t *Chip8ReadRom(const char *filename) {
   }
 
   // Loop and read every byte into the program rom
-  for (u_int16_t i = 0; i < sz; i++) {
+  for (uint16_t i = 0; i < sz; i++) {
     ret[i] = buf[i];
   }
 
