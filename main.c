@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #define ROM_START 0x200
-#define BYTE unsigned char
 #define FB_WIDTH 64
 #define FB_HEIGHT 32
 #define SCALE 20
@@ -55,10 +54,7 @@ int main(int argc, char *argv[]) {
   // Debug
   Chip8DumpMem(chip8);
 
-    // FDE Execution cycle
-  Chip8FetchInstruction(chip8);
-  Chip8DecodeInstruction(chip8);
-  int i = 0;
+  int cycles = 0;
   while (true) {
     SDL_PollEvent(&event);
     if (event.type == SDL_QUIT) {
@@ -81,10 +77,18 @@ int main(int argc, char *argv[]) {
       }
     } // End draw
 
+    // FDES Execution cycle
+    Chip8FetchInstruction(chip8);
+    Chip8DecodeInstruction(chip8);
+    Chip8ExecuteInstruction(chip8);
+
+    printf("cycle: %d, I: %X, SP: %X PC: %X\n", cycles, chip8->I, chip8->SP,
+           chip8->PC);
+
     SDL_RenderPresent(renderer);
     SDL_Delay(16); // ~60 FPS
-    i++;
-    if (i > 10) {
+    cycles++;
+    if (cycles > 2) {
       break;
     }
   }
