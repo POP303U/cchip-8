@@ -1,6 +1,7 @@
 #include "cchip8.h"
 #include "cchip8ins.h"
 #include "font.h"
+#include "stack.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,16 +17,18 @@ Chip8 *Chip8InitCpu() {
   Chip8 *chip8 = malloc(sizeof(Chip8));
   Instruction *ins = malloc(sizeof(Instruction));
 
-  memset(chip8, 0, sizeof(Chip8));
-  memset(ins, 0, sizeof(Instruction));
   if (chip8 == NULL || ins == NULL) {
     fprintf(stderr, "Chip8InitCpu: could not alloc");
   }
 
-  chip8->I = 0;
-  chip8->PC = 0x200; // Execution starts at 0x200
-  chip8->SP = 0;
-  chip8->soundTimer = 0;
+  memset(chip8, 0, sizeof(Chip8));
+  memset(ins, 0, sizeof(Instruction));
+  // Don't memset stack since it needs some values to work
+
+  chip8->I = 0;          // Index reg
+  chip8->PC = 0x200;     // Execution starts at 0x200
+  chip8->SP = 0;         // Points to the top of the stack
+  chip8->soundTimer = 0; // Decrements each cycle by 1
   chip8->delayReg = 0;
   chip8->ins = *ins;
 
@@ -67,11 +70,10 @@ void Chip8DecodeInstruction(Chip8 *chip8) {
 
   // Assign for the funcptr table
   chip8->ins.lbit = (opcode & 0xF000) >> 12;
-  //printf("nnn: %X\nn: %X\nx: %X\ny: %X\nkk: %X",chip8->ins.nnn,chip8->ins.n,chip8->ins.x,chip8->ins.y,chip8->ins.kk);
 }
 
-// Compares extracted bits to Funcptr table and executes them
-// (This does not work for opcodes with multiple signatures)
+// Reads the processed opcodes and fetches the corresponding function to
+// execute, funcptr tables only work with unique lbit signatures...
 void Chip8ExecuteInstruction(Chip8 *chip8) {
   // Preincrement PC
   chip8->PC += 2;
@@ -81,9 +83,12 @@ void Chip8ExecuteInstruction(Chip8 *chip8) {
 
   // For opcodes with a unique left byte
   switch (lbit) {
-    case 1 ... 7: 
+  case 0x0:
+
+  default:
+    if ((lbit >= 0x1 && lbit <= 0x8) || (lbit >= 0xA && lbit <= 0xD)) {
       chip8insTable[lbit](chip8);
-    default:
+    }
     break;
   }
 }
