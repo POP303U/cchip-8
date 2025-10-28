@@ -8,7 +8,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define GET_BIT(p, n) ((((uint8_t *)p)[n / 8] >> (n % 8)) & 0x01)
 #define ROM_START 0x200
 #define BYTE unsigned char
 #define FB_WIDTH 64
@@ -19,7 +18,7 @@ static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_Event event;
 
-int main(void) {
+int main(int argc, char *argv[]) {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s",
                  SDL_GetError());
@@ -45,7 +44,7 @@ int main(void) {
 
   // Read rom file and get size
   uint8_t *rom = Chip8ReadRom("rom.ch8");
-  ulong sz = Chip8RomSize("rom.ch8");
+  uint16_t sz = Chip8RomSize("rom.ch8");
 
   // Create a cpu initiating values + font
   Chip8 *chip8 = Chip8InitCpu();
@@ -56,9 +55,8 @@ int main(void) {
   // Debug
   Chip8DumpMem(chip8);
 
-  TEST_framebuffer_smile(chip8);
-
   bool test = true;
+  int i = 0;
   while (true) {
     SDL_PollEvent(&event);
     if (event.type == SDL_QUIT) {
@@ -83,15 +81,10 @@ int main(void) {
       }
     } // End draw
 
+    TEST_framebuffer_smile(chip8);
+
     SDL_RenderPresent(renderer);
-    SDL_Delay(16 * 5); // ~60 FPS
-    if (test) {
-      test = false;
-      Chip8_00E0(chip8);
-    } else {
-      test = true;
-      TEST_framebuffer_smile(chip8);
-    }
+    SDL_Delay(16); // ~60 FPS
   }
 
   SDL_DestroyRenderer(renderer);

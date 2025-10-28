@@ -67,9 +67,9 @@ void Chip8DecodeInstruction(Chip8 *chip8, uint16_t opcode) {
 void Chip8ExecuteInstruction(Chip8 *chip8);
 void Chip8UpdateState(Chip8 *chip8);
 
-void Chip8LoadRom(struct Chip8 *chip8, uint8_t *rom, ulong size) {
+void Chip8LoadRom(struct Chip8 *chip8, uint8_t *rom, uint16_t size) {
   // Map rom into chip8 starting from 0x200
-  for (ulong i = ROM_START; i < (ROM_START + size); i++) {
+  for (uint16_t i = ROM_START; i < (ROM_START + size); i++) {
     chip8->memory[i] = rom[i - ROM_START];
     // moving around memory like this is hard
     // printf("chip8->memory[%02X] = rom[%02X], val(%02X)\n", ROM_START + i, i
@@ -77,7 +77,7 @@ void Chip8LoadRom(struct Chip8 *chip8, uint8_t *rom, ulong size) {
   }
 }
 
-ulong Chip8RomSize(const char *filename) {
+long Chip8RomSize(const char *filename) {
   FILE *fptr = fopen(filename, BINARY_READ);
 
   // Get the file size
