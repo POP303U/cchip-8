@@ -55,7 +55,9 @@ int main(int argc, char *argv[]) {
   // Debug
   Chip8DumpMem(chip8);
 
-  bool test = true;
+    // FDE Execution cycle
+  Chip8FetchInstruction(chip8);
+  Chip8DecodeInstruction(chip8);
   int i = 0;
   while (true) {
     SDL_PollEvent(&event);
@@ -63,28 +65,28 @@ int main(int argc, char *argv[]) {
       break;
     }
 
-    uint16_t opcode = Chip8FetchInstruction(chip8);
-    Chip8DecodeInstruction(chip8, opcode);
-
     // Begin draw
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+    Chip8FetchInstruction(chip8);
 
     // Draw framebuffer
     for (int y = 0; y < FB_HEIGHT; y++) {
       for (int x = 0; x < FB_WIDTH; x++) {
         if (chip8->framebuffer[y * FB_WIDTH + x]) {
           SDL_Rect rect = {x * SCALE, y * SCALE, SCALE, SCALE};
-          SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Green
+          SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Green
           SDL_RenderFillRect(renderer, &rect);
         }
       }
     } // End draw
 
-    TEST_framebuffer_smile(chip8);
-
     SDL_RenderPresent(renderer);
     SDL_Delay(16); // ~60 FPS
+    i++;
+    if (i > 10) {
+      break;
+    }
   }
 
   SDL_DestroyRenderer(renderer);
