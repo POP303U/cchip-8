@@ -17,6 +17,8 @@ void Chip8_00E0(Chip8 *chip8) {
 };
 
 void Chip8_00EE(Chip8 *chip8) {};
+
+// 0x1NNN: Jump to location NNN
 void Chip8_1NNN(Chip8 *chip8) {};
 void Chip8_2NNN(Chip8 *chip8) {};
 void Chip8_3XKK(Chip8 *chip8) {};

@@ -4,8 +4,19 @@
 #ifndef CCHIP8_H_
 #define CCHIP8_H_
 
+typedef struct Instruction {
+  uint16_t nnn;
+  uint16_t n;
+  uint8_t x;
+  uint8_t y;
+  uint16_t kk;
+} Instruction;
+
 // Structs have to defined here to know the size of them
 typedef struct Chip8 {
+  // Current executing opcode
+  Instruction opcode;
+
   // Memory space
   uint8_t memory[4096];
 
@@ -32,10 +43,10 @@ Chip8 *Chip8InitCpu();
 
 // File reading and creating a rom buffer
 uint8_t *Chip8ReadRom(const char *filename);
-ulong Chip8RomSize(const char *filename);
+long Chip8RomSize(const char *filename);
 
 // Rom and memory mapping
-void Chip8LoadRom(Chip8 *chip8, uint8_t *rom, ulong size);
+void Chip8LoadRom(Chip8 *chip8, uint8_t *rom, uint16_t size);
 void Chip8DumpMem(Chip8 *chip8);
 
 // CPU execution cycle: FDE (Fetch, Decode, Execute)
