@@ -82,13 +82,16 @@ int main(int argc, char *argv[]) {
     Chip8DecodeInstruction(chip8);
     Chip8ExecuteInstruction(chip8);
 
-    printf("cycle: %d, I: %X, SP: %X PC: %X\n", cycles, chip8->I, chip8->SP,
+    printf("cycle: %d, Current instruction %04X, I: %X, SP: %X PC: %X\n", cycles, chip8->ins.opcode, chip8->I, chip8->SP,
            chip8->PC);
+    for (int i = 0; i < 16; i++) {
+      printf("V%02X: %02X\n", i, chip8->V[i]);
+    }
 
     SDL_RenderPresent(renderer);
     SDL_Delay(16); // ~60 FPS
     cycles++;
-    if (cycles > 2) {
+    if (cycles > 6) {
       break;
     }
   }
