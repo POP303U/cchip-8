@@ -5,7 +5,7 @@
 // The array with all the functions.
 const Chip8Instruction chip8insTable[] = {
     Chip8_1NNN, Chip8_2NNN, Chip8_3XKK, Chip8_4XKK, Chip8_5XY0, Chip8_6XKK,
-    Chip8_7XKK, Chip8_ANNN, Chip8_BNNN, Chip8_CXKK, Chip8_DXYN};
+    Chip8_7XKK, NULL, NULL, Chip8_ANNN, Chip8_BNNN, Chip8_CXKK, Chip8_DXYN};
 
 // This instruction is ignored by modern interpreters
 void Chip8_0NNN(Chip8 *chip8) { return; };

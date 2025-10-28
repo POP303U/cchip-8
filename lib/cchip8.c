@@ -1,4 +1,5 @@
 #include "cchip8.h"
+#include "cchip8ins.h"
 #include "font.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -13,9 +14,11 @@
 
 Chip8 *Chip8InitCpu() {
   Chip8 *chip8 = malloc(sizeof(Chip8));
+  Instruction *ins = malloc(sizeof(Instruction));
 
   memset(chip8, 0, sizeof(Chip8));
-  if (chip8 == NULL) {
+  memset(ins, 0, sizeof(Instruction));
+  if (chip8 == NULL || ins == NULL) {
     fprintf(stderr, "Chip8InitCpu: could not alloc");
   }
 
@@ -24,6 +27,7 @@ Chip8 *Chip8InitCpu() {
   chip8->SP = 0;
   chip8->soundTimer = 0;
   chip8->delayReg = 0;
+  chip8->ins = *ins;
 
   // Load Font into memory
   for (int i = 0; i < FONTSET_SIZE; i++) {
@@ -37,34 +41,53 @@ Chip8 *Chip8InitCpu() {
 }
 
 // CPU execution cycle: FDE (Fetch, Decode, Execute)
-uint16_t Chip8FetchInstruction(Chip8 *chip8) {
+// Fetch Instruction from memory and return it
+void Chip8FetchInstruction(Chip8 *chip8) {
   uint8_t addr0 = chip8->memory[chip8->PC];
   uint8_t addr1 = chip8->memory[chip8->PC + 0x01];
 
-  // shift two bytes into a short
-  return ((uint16_t)addr0 << 8) | addr1;
+  // shift two bytes into a short to create a opcode
+  uint16_t opcode = ((uint16_t)addr0 << 8) | addr1;
+
+  // Save current executing opcode into the chip8
+  chip8->ins.opcode = opcode;
 }
 
-void Chip8DecodeInstruction(Chip8 *chip8, uint16_t opcode) {
-  // All of this is just extraction of values from opcodes
-  uint16_t nnn = opcode & 0x0FFF;
-  uint16_t n = opcode & 0x000F;
-  uint8_t x = (opcode & 0x0F00) >> 8;
-  uint8_t y = (opcode & 0x00F0) >> 4;
-  uint16_t kk = opcode & 0x00FF;
-  uint16_t lbit_opcode = (opcode & 0xF000) >> 12;
+// Decode the current Instruction and fill Instruction struct
+void Chip8DecodeInstruction(Chip8 *chip8) {
+  // Currently processed opcode
+  uint16_t opcode = chip8->ins.opcode;
 
+  // All of this is just extraction of values from opcodes
+  chip8->ins.nnn = opcode & 0x0FFF;
+  chip8->ins.n = opcode & 0x000F;
+  chip8->ins.x = (opcode & 0x0F00) >> 8;
+  chip8->ins.y = (opcode & 0x00F0) >> 4;
+  chip8->ins.kk = opcode & 0x00FF;
+
+  // Assign for the funcptr table
+  chip8->ins.lbit = (opcode & 0xF000) >> 12;
+  //printf("nnn: %X\nn: %X\nx: %X\ny: %X\nkk: %X",chip8->ins.nnn,chip8->ins.n,chip8->ins.x,chip8->ins.y,chip8->ins.kk);
+}
+
+// Compares extracted bits to Funcptr table and executes them
+// (This does not work for opcodes with multiple signatures)
+void Chip8ExecuteInstruction(Chip8 *chip8) {
   // Preincrement PC
   chip8->PC += 2;
 
+  // Left bit indicates which instruction to execute
+  const uint8_t lbit = chip8->ins.lbit;
+
   // For opcodes with a unique left byte
-  switch (lbit_opcode) {
-  default:
-    printf("lbit: %X\n ", lbit_opcode);
+  switch (lbit) {
+    case 1 ... 7: 
+      chip8insTable[lbit](chip8);
+    default:
     break;
   }
 }
-void Chip8ExecuteInstruction(Chip8 *chip8);
+
 void Chip8UpdateState(Chip8 *chip8);
 
 void Chip8LoadRom(struct Chip8 *chip8, uint8_t *rom, uint16_t size) {

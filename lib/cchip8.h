@@ -5,8 +5,10 @@
 #define CCHIP8_H_
 
 typedef struct Instruction {
+  uint16_t opcode;
+  uint16_t lbit;
   uint16_t nnn;
-  uint16_t n;
+  uint8_t n;
   uint8_t x;
   uint8_t y;
   uint16_t kk;
@@ -15,7 +17,7 @@ typedef struct Instruction {
 // Structs have to defined here to know the size of them
 typedef struct Chip8 {
   // Current executing opcode
-  Instruction opcode;
+  Instruction ins;
 
   // Memory space
   uint8_t memory[4096];
@@ -52,8 +54,8 @@ void Chip8DumpMem(Chip8 *chip8);
 // CPU execution cycle: FDE (Fetch, Decode, Execute)
 // Fetch: Returns the current executing hex bytes like: 0xA2B4
 // Decode: Destructs hex bytes (from fetch) into instruction calls and variables
-uint16_t Chip8FetchInstruction(Chip8 *chip8);
-void Chip8DecodeInstruction(Chip8 *chip8, uint16_t opcode);
+void Chip8FetchInstruction(Chip8 *chip8);
+void Chip8DecodeInstruction(Chip8 *chip8);
 void Chip8ExecuteInstruction(Chip8 *chip8);
 void Chip8UpdateState(Chip8 *chip8);
 
