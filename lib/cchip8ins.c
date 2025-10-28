@@ -4,10 +4,14 @@
 #include <string.h>
 
 // The array with all the functions.
-const Chip8Instruction chip8insTable[] = {
+const Chip8Instruction chip8insTableD[] = {
     NULL,       Chip8_1NNN, Chip8_2NNN, Chip8_3XKK, Chip8_4XKK,
     Chip8_5XY0, Chip8_6XKK, Chip8_7XKK, NULL,       NULL,
     Chip8_ANNN, Chip8_9XY0, Chip8_BNNN, Chip8_CXKK, Chip8_DXYN};
+  
+const Chip8Instruction chip8insTable8[] = {
+    Chip8_8XY0, Chip8_8XY1, Chip8_8XY2, Chip8_8XY3, Chip8_8XY4,
+    Chip8_8XY5, Chip8_8XY6, Chip8_8XY7, Chip8_8XYE};
 
 // This instruction is ignored by modern interpreters
 void Chip8_0NNN(Chip8 *chip8) { return; }
@@ -40,11 +44,45 @@ void Chip8_2NNN(Chip8 *chip8) {
   chip8->PC = chip8->ins.nnn;
 }
 
-void Chip8_3XKK(Chip8 *chip8) {}
-void Chip8_4XKK(Chip8 *chip8) {}
-void Chip8_5XY0(Chip8 *chip8) {}
-void Chip8_6XKK(Chip8 *chip8) {}
-void Chip8_7XKK(Chip8 *chip8) {}
+// 0x3XKK/SE Vx, byte: Skip next instruction if Vx == kk
+void Chip8_3XKK(Chip8 *chip8) {
+  // Increments PC by 2 if Vx == Vy
+  if (chip8->V[chip8->ins.x] == chip8->V[chip8->ins.y]) {
+    chip8->PC += 2;
+  }
+}
+
+// 0x4XKK/LD Vx, byte: Skip next instruction if Vx != kk
+void Chip8_4XKK(Chip8 *chip8) {
+  // Increments PC by 2 if Vx == Vy
+  if (chip8->V[chip8->ins.x] != chip8->V[chip8->ins.y]) {
+    chip8->PC += 2;
+  }
+}
+
+// 0x5XY0/SE Vx, Vy: Set Vx = kk
+void Chip8_5XY0(Chip8 *chip8) {
+  // Put kk into Vx
+  chip8->V[chip8->ins.x] = chip8->ins.kk;
+}
+
+// 0x6XKK/LD Vx, Byte: Set Vx = kk
+void Chip8_6XKK(Chip8 *chip8) {
+  // Put the value of kk into reg Vx
+  chip8->V[chip8->ins.x] = chip8->ins.kk;
+}
+
+// 0x7XKK/ADD Vx, Byte: Set Vx += kk
+void Chip8_7XKK(Chip8 *chip8) {
+  // Add kk to Vx with overflow flag
+  if (((uint16_t)(chip8->V[chip8->ins.x] + chip8->ins.kk)) > 255) {
+    chip8->V[0xF] = 0x1;
+    chip8->V[chip8->ins.x] = 0xFF;
+    return;
+  }
+  chip8->V[chip8->ins.x] += chip8->ins.kk;
+}
+
 void Chip8_8XY0(Chip8 *chip8) {}
 void Chip8_8XY1(Chip8 *chip8) {}
 void Chip8_8XY2(Chip8 *chip8) {}
@@ -54,15 +92,22 @@ void Chip8_8XY5(Chip8 *chip8) {}
 void Chip8_8XY6(Chip8 *chip8) {}
 void Chip8_8XY7(Chip8 *chip8) {}
 void Chip8_8XYE(Chip8 *chip8) {}
-void Chip8_9XY0(Chip8 *chip8) {}
 
-// 0xANNN: The value of register I is set to NNN.
+// 0x9XY0/SNE Vx, Vy: Skip next instruction if Vx != Vy
+void Chip8_9XY0(Chip8 *chip8) {
+  // Increase PC by 2 if Vx != Vy
+  if (chip8->V[chip8->ins.x] != chip8->V[chip8->ins.y]) {
+    chip8->PC += 2;
+  }
+}
+
+// 0xANNN/LD I, addr: The value of register I is set to NNN.
 void Chip8_ANNN(Chip8 *chip8) {
   // Sets I to the extracted right three bits
   chip8->I = chip8->ins.nnn;
 }
 
-// 0xBNNN: The Program counter is set to NNN plus the value of V0
+// 0xBNNN/JP V0, addr: The Program counter is set to NNN plus the value of V0
 void Chip8_BNNN(Chip8 *chip8) {
   uint16_t jmpaddr = chip8->ins.nnn + chip8->V[0];
   chip8->PC = jmpaddr;

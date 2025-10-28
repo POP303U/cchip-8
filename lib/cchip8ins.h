@@ -8,7 +8,10 @@
 typedef void (*Chip8Instruction)(Chip8 *chip8); // Readability
 
 // Funcptr array for repeated instructions
-extern const Chip8Instruction chip8insTable[];
+// 1 Is for (1NNN-DXYN)
+// 2 Is for (8XY1-8XY(E/7))
+extern const Chip8Instruction chip8insTableD[];
+extern const Chip8Instruction chip8insTable8[];
 
 // Function explanations and definitions are in the cchip8ins.c file
 void Chip8_0NNN(Chip8 *chip8);
