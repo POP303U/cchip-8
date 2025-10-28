@@ -1,7 +1,6 @@
 #include "cchip8.h"
 #include "cchip8ins.h"
 #include "font.h"
-#include "stack.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,18 +77,24 @@ void Chip8ExecuteInstruction(Chip8 *chip8) {
   // Preincrement PC
   chip8->PC += 2;
 
-  // Left bit indicates which instruction to execute
+  // Right and left bit is enough to differentiate functions
   const uint8_t lbit = chip8->ins.lbit;
+  const uint8_t rbit = chip8->ins.n;
+
+  // mutable bit for assigning values to another for correct funcptr usage
+  uint8_t mutbit;
 
   // For opcodes with a unique left byte
-  switch (lbit) {
-  case 0x0:
+  if ((lbit >= 0x1 && lbit <= 0x8) || (lbit >= 0xA && lbit <= 0xD)) {
+    chip8insTableD[lbit](chip8);
+    return;
+  }
 
-  default:
-    if ((lbit >= 0x1 && lbit <= 0x8) || (lbit >= 0xA && lbit <= 0xD)) {
-      chip8insTable[lbit](chip8);
-    }
-    break;
+  // For opcodes 8XY1 to 8XYE 
+  if ((lbit == 0x8)) {
+    mutbit = rbit;
+    if (rbit == 0xE) mutbit = 0x8;
+    chip8insTable8[mutbit](chip8);
   }
 }
 
