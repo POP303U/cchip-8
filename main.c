@@ -64,7 +64,6 @@ int main(int argc, char *argv[]) {
     // Begin draw
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-    Chip8FetchInstruction(chip8);
 
     // Draw framebuffer
     for (int y = 0; y < FB_HEIGHT; y++) {
@@ -91,10 +90,12 @@ int main(int argc, char *argv[]) {
     SDL_RenderPresent(renderer);
     SDL_Delay(16); // ~60 FPS
     cycles++;
-    if (cycles > 6) {
+    if (cycles > 75) {
       break;
     }
   }
+
+  SDL_Delay(500);
 
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
