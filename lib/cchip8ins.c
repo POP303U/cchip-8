@@ -1,17 +1,17 @@
 #include "cchip8ins.h"
 #include "cchip8.h"
 #include <stdint.h>
+#include <stdio.h>
+#include <inttypes.h>
 #include <string.h>
 
 // The array with all the functions.
-const Chip8Instruction chip8insTableD[] = {
+const Chip8Instruction chip8insTable[] = {
     NULL,       Chip8_1NNN, Chip8_2NNN, Chip8_3XKK, Chip8_4XKK,
-    Chip8_5XY0, Chip8_6XKK, Chip8_7XKK, NULL,       NULL,
-    Chip8_ANNN, Chip8_9XY0, Chip8_BNNN, Chip8_CXKK, Chip8_DXYN};
-  
-const Chip8Instruction chip8insTable8[] = {
+    Chip8_5XY0, Chip8_6XKK, Chip8_7XKK, NULL,       Chip8_9XY0,
+    Chip8_ANNN, Chip8_BNNN, Chip8_CXKK, Chip8_DXYN, NULL,
     Chip8_8XY0, Chip8_8XY1, Chip8_8XY2, Chip8_8XY3, Chip8_8XY4,
-    Chip8_8XY5, Chip8_8XY6, Chip8_8XY7, Chip8_8XYE};
+    Chip8_8XY5, Chip8_8XY6, Chip8_8XY7, Chip8_8XYE };             
 
 // This instruction is ignored by modern interpreters
 void Chip8_0NNN(Chip8 *chip8) { return; }
@@ -72,7 +72,7 @@ void Chip8_6XKK(Chip8 *chip8) {
   chip8->V[chip8->ins.x] = chip8->ins.kk;
 }
 
-// 0x7XKK/ADD Vx, Byte: Set Vx += kk
+// 0x7XKK/ADD Vx, Byte: Set Vx += kk, set VF = carry
 void Chip8_7XKK(Chip8 *chip8) {
   // Add kk to Vx with overflow flag
   if (((uint16_t)(chip8->V[chip8->ins.x] + chip8->ins.kk)) > 255) {
@@ -83,15 +83,70 @@ void Chip8_7XKK(Chip8 *chip8) {
   chip8->V[chip8->ins.x] += chip8->ins.kk;
 }
 
-void Chip8_8XY0(Chip8 *chip8) {}
-void Chip8_8XY1(Chip8 *chip8) {}
-void Chip8_8XY2(Chip8 *chip8) {}
-void Chip8_8XY3(Chip8 *chip8) {}
-void Chip8_8XY4(Chip8 *chip8) {}
-void Chip8_8XY5(Chip8 *chip8) {}
-void Chip8_8XY6(Chip8 *chip8) {}
+// 0x8XY0/LD Vx, Vy: Set Vx = Vy
+void Chip8_8XY0(Chip8 *chip8) {
+  // Store the value of Vy in Vx
+  chip8->V[chip8->ins.x] = chip8->V[chip8->ins.y]; 
+}
+
+// 0x8XY1/OR Vx, Vy: Set Vx = Vx OR Vy
+void Chip8_8XY1(Chip8 *chip8) {
+  // OR Vx and Vy and store the result in Vx
+  chip8->V[chip8->ins.x] = chip8->V[chip8->ins.x] | chip8->V[chip8->ins.y];
+}
+
+// 0x8XY2/AND Vx, Vy: Set Vx = Vx AND Vy
+void Chip8_8XY2(Chip8 *chip8) {
+  // AND Vx and Vy and store the result in Vx
+  chip8->V[chip8->ins.x] = chip8->V[chip8->ins.x] & chip8->V[chip8->ins.y];
+}
+
+// 0x8XY3/XOR Vx, Vy: Set Vx = Vx XOR Vy
+void Chip8_8XY3(Chip8 *chip8) {
+  // XOR Vx and Vy and store the result in Vx
+  chip8->V[chip8->ins.x] = chip8->V[chip8->ins.x] ^ chip8->V[chip8->ins.y];
+}
+
+// 0x8XY4/ADD Vx, Vy: Set Vx += Vy, set VF = carry
+void Chip8_8XY4(Chip8 *chip8) {
+  // Add Vy to Vx with overflow flag
+  if (((uint16_t)(chip8->V[chip8->ins.x] + chip8->ins.y)) > 255) {
+    chip8->V[0xF] = 0x1;
+  } else {
+    chip8->V[0xF] = 0x0;
+  }
+
+  chip8->V[chip8->ins.x] += chip8->V[chip8->ins.y];
+}
+
+// 0x8XY5/SUB Vx, Vy: Set Vx = Vx - Vy, set VF = NOT borrow
+void Chip8_8XY5(Chip8 *chip8) {
+  // Sub to Vx with Vy with overflow flag
+  if (chip8->V[chip8->ins.x] > chip8->V[chip8->ins.y]) {
+    chip8->V[0xF] = 0x1;
+  } else {
+    chip8->V[0xF] = 0x0;
+  }
+
+  chip8->V[chip8->ins.x] -= chip8->V[chip8->ins.y];
+}
+
+void Chip8_8XY6(Chip8 *chip8) {
+}
+
 void Chip8_8XY7(Chip8 *chip8) {}
-void Chip8_8XYE(Chip8 *chip8) {}
+
+// 0x8XYE/SHR Vx {, Vy}: Set Vx = Vx SHR 1
+void Chip8_8XYE(Chip8 *chip8) {
+  // If the most significant bit of Vx is 1, then set VF to 1 otherwise 0
+  if (GETBIT(chip8->V[chip8->ins.x], 7) == 1) {
+    chip8->V[0xF] = 0x1;    
+  } else {
+    chip8->V[0xF] = 0x0;
+  }
+
+  chip8->V[chip8->ins.x] <<= 1;
+}
 
 // 0x9XY0/SNE Vx, Vy: Skip next instruction if Vx != Vy
 void Chip8_9XY0(Chip8 *chip8) {
@@ -114,7 +169,30 @@ void Chip8_BNNN(Chip8 *chip8) {
 }
 
 void Chip8_CXKK(Chip8 *chip8) {}
-void Chip8_DXYN(Chip8 *chip8) {}
+
+// 0xDXYN/DRW Vx, Vy, nibble: Display n-byte starting at memory location I at (Vx, Vy)
+void Chip8_DXYN(Chip8 *chip8) {
+  uint8_t Vx = chip8->V[chip8->ins.x];
+  uint8_t Vy = chip8->V[chip8->ins.y];
+
+  for (uint8_t n = 0x0; n < chip8->ins.n; n++) {
+    uint8_t Ibyte = chip8->memory[chip8->I + n];
+
+    for (uint8_t i = 0; i < 8; i++) {
+      uint16_t xy = (Vx + i) + (64 * Vy);
+
+      // If a sprite collides with a pixel set VF = 1
+      if (chip8->framebuffer[xy]) {
+        chip8->V[0xF] = 0x1;
+      }
+
+      // Set each bit into the framebuffer (in big endian)
+      chip8->framebuffer[xy] ^= GETBIT(SWAPBYTE(Ibyte), i); 
+    }
+    Vy += 1;
+  }
+}
+
 void Chip8_EX9E(Chip8 *chip8) {}
 void Chip8_EXA1(Chip8 *chip8) {}
 void Chip8_FX07(Chip8 *chip8) {}
