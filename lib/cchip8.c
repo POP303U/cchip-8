@@ -90,15 +90,32 @@ void Chip8ExecuteInstruction(Chip8 *chip8) {
     return;
   }
 
-  // For opcodes 8XY1 to 8XYE 
+  // For opcodes 8XY1 to 8XYE
   if ((rbit >= 0x0 && rbit <= 0x7) || rbit == 0xE) {
     mutbit = rbit;
-    if (rbit == 0xE) mutbit = 0x8;
+    if (rbit == 0xE)
+      mutbit = 0x8;
     chip8insTable[mutbit + 15](chip8);
     return;
   }
 
-  printf("Invalid opcode\n");
+  // For unique opcodes
+  switch (chip8->ins.opcode & 0x00FF) {
+  case 0xE0: chip8insTable[24](chip8); break;
+  case 0xEE: chip8insTable[25](chip8); break;
+  case 0x9E: chip8insTable[26](chip8); break;
+  case 0xA1: chip8insTable[27](chip8); break;
+  case 0x07: chip8insTable[28](chip8); break;
+  case 0x0A: chip8insTable[29](chip8); break;
+  case 0x15: chip8insTable[30](chip8); break;
+  case 0x18: chip8insTable[31](chip8); break;
+  case 0x1E: chip8insTable[32](chip8); break;
+  case 0x29: chip8insTable[33](chip8); break;
+  case 0x33: chip8insTable[34](chip8); break;
+  case 0x55: chip8insTable[35](chip8); break;
+  case 0x65: chip8insTable[36](chip8); break;
+  default: fprintf(stderr, "Invalid opcode"); break;
+  }
 }
 
 void Chip8UpdateState(Chip8 *chip8);
