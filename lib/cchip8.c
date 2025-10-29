@@ -78,24 +78,27 @@ void Chip8ExecuteInstruction(Chip8 *chip8) {
   chip8->PC += 2;
 
   // Right and left bit is enough to differentiate functions
-  const uint8_t lbit = chip8->ins.lbit;
-  const uint8_t rbit = chip8->ins.n;
+  const int8_t lbit = chip8->ins.lbit;
+  const int8_t rbit = chip8->ins.n;
 
   // mutable bit for assigning values to another for correct funcptr usage
   uint8_t mutbit;
 
   // For opcodes with a unique left byte
-  if ((lbit >= 0x1 && lbit <= 0x8) || (lbit >= 0xA && lbit <= 0xD)) {
-    chip8insTableD[lbit](chip8);
+  if ((lbit >= 0x1 && lbit <= 0x7) || (lbit >= 0xA && lbit <= 0xD)) {
+    chip8insTable[lbit](chip8);
     return;
   }
 
   // For opcodes 8XY1 to 8XYE 
-  if ((lbit == 0x8)) {
+  if ((rbit >= 0x0 && rbit <= 0x7) || rbit == 0xE) {
     mutbit = rbit;
     if (rbit == 0xE) mutbit = 0x8;
-    chip8insTable8[mutbit](chip8);
+    chip8insTable[mutbit + 15](chip8);
+    return;
   }
+
+  printf("Invalid opcode\n");
 }
 
 void Chip8UpdateState(Chip8 *chip8);
