@@ -4,6 +4,12 @@
 #ifndef CCHIP8_H_
 #define CCHIP8_H_
 
+// Gets a bit from a byte at an index
+#define GETBIT(x,p) (((x) >> (p)) & 1)
+
+// Turns the input into a big-endian number
+#define SWAPBYTE(i) ((i & 0xF0) >> 4) | ((i & 0x0F) << 4)
+
 typedef struct Instruction {
   uint16_t opcode;
   uint16_t lbit;
