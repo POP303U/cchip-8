@@ -1,6 +1,7 @@
 #include "lib/cchip8.h"
 #include "lib/cchip8ins.h"
 #include "lib/font.h"
+#include "lib/keyboard.h"
 #include "lib/tests.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_rect.h>
@@ -9,8 +10,6 @@
 #include <stdint.h>
 
 #define ROM_START 0x200
-#define FB_WIDTH 64
-#define FB_HEIGHT 32
 #define SCALE 20
 
 static SDL_Window *window;
@@ -18,6 +17,14 @@ static SDL_Renderer *renderer;
 static SDL_Event event;
 
 int main(int argc, char *argv[]) {
+  // Load game from first arg
+  const char *game = argv[1];
+
+  if (!game || argc < 1) {
+    fprintf(stderr, "Usage: ./chip8 <ROM>");
+    exit(2);
+  }
+
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s",
                  SDL_GetError());
@@ -42,8 +49,8 @@ int main(int argc, char *argv[]) {
   // CHIP-8 STARTUP
 
   // Read rom file and get size
-  uint8_t *rom = Chip8ReadRom("rom.ch8");
-  uint16_t sz = Chip8RomSize("rom.ch8");
+  uint8_t *rom = Chip8ReadRom(game);
+  uint16_t sz = Chip8RomSize(game);
 
   // Create a cpu initiating values + font
   Chip8 *chip8 = Chip8InitCpu();
@@ -54,23 +61,30 @@ int main(int argc, char *argv[]) {
   // Debug
   Chip8DumpMem(chip8);
 
-  int cycles = 0;
-  while (true) {
-    SDL_PollEvent(&event);
-    if (event.type == SDL_QUIT) {
-      break;
+  // Initialize keyboard input
+  initKeyboard(&(chip8->kbd));
+
+  while (chip8->running) {
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_QUIT) {
+        chip8->running = false;
+      }
+
+      // Keypad is 1234|qwer|asdf|yxcv
+      readKey(&(chip8->kbd), &event);
     }
 
     // Begin draw
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+
     // Draw framebuffer
     for (int y = 0; y < FB_HEIGHT; y++) {
       for (int x = 0; x < FB_WIDTH; x++) {
         if (chip8->framebuffer[y * FB_WIDTH + x]) {
           SDL_Rect rect = {x * SCALE, y * SCALE, SCALE, SCALE};
-          SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Green
+          SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green
           SDL_RenderFillRect(renderer, &rect);
         }
       }
@@ -81,18 +95,11 @@ int main(int argc, char *argv[]) {
     Chip8DecodeInstruction(chip8);
     Chip8ExecuteInstruction(chip8);
 
-    printf("cycle: %d, Current instruction %04X, I: %X, SP: %X PC: %X\n", cycles, chip8->ins.opcode, chip8->I, chip8->SP,
-           chip8->PC);
-    for (int i = 0; i < 16; i++) {
-      printf("V%X: %02X\n", i, chip8->V[i]);
-    }
+    // Debug opcodes
+    debug(chip8);
 
     SDL_RenderPresent(renderer);
-    SDL_Delay(16); // ~60 FPS
-    cycles++;
-    if (cycles > 75) {
-      break;
-    }
+    SDL_Delay(1); // ~60 FPS
   }
 
   SDL_Delay(500);

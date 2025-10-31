@@ -23,9 +23,6 @@ void TEST_framebuffer_smile(Chip8 *chip8) {
          2047 / FB_WIDTH);
 }
 
-// void fbSetPixel(uint8_t *fb[], int x, int y, bool pixel) { fb[x * y] = pixel;
-// }
-
 void romToBin(uint8_t *buf, int bytes_to_read) {
   for (int i = 0; i < bytes_to_read; i++) {
     uint8_t byte = buf[i];
@@ -37,4 +34,14 @@ void romToBin(uint8_t *buf, int bytes_to_read) {
     }
     //       printf("\n");
   }
+}
+
+void debug(Chip8 *chip8) {
+  printf("0x%04X - %04X", chip8->PC, chip8->ins.opcode);
+//  printf("cycle: %lld, Current instruction %04X, PC: %X, SP: %X I: %X\n", chip8->cycles, chip8->ins.opcode, chip8->PC, chip8->SP,
+//         chip8->I);
+  for (int i = 0; i < 16; i++) {
+    printf("   V%X: %02X | ", i, chip8->V[i]);
+  }
+  printf("\n");
 }
