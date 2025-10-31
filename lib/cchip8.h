@@ -1,14 +1,28 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "keyboard.h"
 
 #ifndef CCHIP8_H_
 #define CCHIP8_H_
 
 // Gets a bit from a byte at an index
-#define GETBIT(x,p) (((x) >> (p)) & 1)
+#define GETBIT(byte, x) (((byte) >> (7 - (x))) & 1)
 
 // Turns the input into a big-endian number
 #define SWAPBYTE(i) ((i & 0xF0) >> 4) | ((i & 0x0F) << 4)
+
+// Memory mapping
+#define ROM_START 0x200
+#define FONT_START 0x50
+#define FONTSET_SIZE 80
+
+// File reading
+#define BINARY_READ "rb"
+
+// Framebuffer variables
+#define FB_WIDTH 64
+#define FB_HEIGHT 32
 
 typedef struct Instruction {
   uint16_t opcode;
@@ -22,8 +36,17 @@ typedef struct Instruction {
 
 // Structs have to defined here to know the size of them
 typedef struct Chip8 {
+  // Track if we have to stop execution
+  bool running;
+
   // Current executing opcode
   Instruction ins;
+
+  // Input device
+  Keyboard kbd;
+
+  // Track cycle count for debugging
+  uint64_t cycles;
 
   // Memory space
   uint8_t memory[4096];
@@ -32,7 +55,7 @@ typedef struct Chip8 {
   uint8_t V[16];
 
   // 64 Byte stack
-  uint8_t stack[64];
+  uint16_t stack[64];
 
   // Framebuffer
   uint8_t framebuffer[64 * 32];
