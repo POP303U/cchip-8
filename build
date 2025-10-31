@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Script mostly used for Windows systems running on MINGW64
+set -e
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <ROM file path>"
+    exit 1
+fi
+
+# Build
+make  && ./chip8.exe "$1" > log
