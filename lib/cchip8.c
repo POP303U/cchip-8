@@ -81,47 +81,61 @@ void Chip8ExecuteInstruction(Chip8 *chip8) {
   // Increase cycle count
   chip8->cycles++;
 
-  // Right and left bit is enough to differentiate functions
-  const int8_t lbit = chip8->ins.lbit;
-  const int8_t rbit = chip8->ins.n;
+  // Get funcptr index in the array
+  uint16_t index = Chip8GetOpcodeIndex(chip8->ins.opcode);  // custom function that maps opcode to table entry
 
-  // mutable bit for assigning values to another for correct funcptr usage
-  uint8_t mutbit;
-
-  // For opcodes with a unique left byte
-  if ((lbit >= 0x1 && lbit <= 0x7) || (lbit >= 0xA && lbit <= 0xD)) {
-    chip8insTable[lbit](chip8);
-    return;
+  // Call function (with failsafe)
+  if (chip8insTable[index] == NULL) {
+      fprintf(stderr, "Access into NULL at chip8insTable[%d]\n", index);
+      fprintf(stderr, "Probably encountered an invalid instruction\n");
+      exit(1);
   }
 
-  // For opcodes 8XY1 to 8XYE
-  if ((rbit >= 0x0 && rbit <= 0x7) || rbit == 0xE) {
-    mutbit = rbit;
-    if (rbit == 0xE)
-      mutbit = 0x8;
-    chip8insTable[mutbit + 15](chip8);
-  }
-
-  // For unique opcodes
-  switch (chip8->ins.opcode & 0x00FF) {
-  case 0xE0: chip8insTable[24](chip8); break;
-  case 0xEE: chip8insTable[25](chip8); break;
-  case 0x9E: chip8insTable[26](chip8); break;
-  case 0xA1: chip8insTable[27](chip8); break;
-  case 0x07: chip8insTable[28](chip8); break;
-  case 0x0A: chip8insTable[29](chip8); break;
-  case 0x15: chip8insTable[30](chip8); break;
-  case 0x18: chip8insTable[31](chip8); break;
-  case 0x1E: chip8insTable[32](chip8); break;
-  case 0x29: chip8insTable[33](chip8); break;
-  case 0x33: chip8insTable[34](chip8); break;
-  case 0x55: chip8insTable[35](chip8); break;
-  case 0x65: chip8insTable[36](chip8); break;
-  default: fprintf(stderr, "Invalid opcode"); break;
-  }
+  chip8insTable[index](chip8);
 }
 
-void Chip8UpdateState(Chip8 *chip8);
+void Chip8UpdateState(Chip8 *chip8, uint64_t delta) {
+  // Decrement delayReg by the amount of instructions?
+  chip8->delayReg -= delta;
+}
+
+uint8_t Chip8GetOpcodeIndex(uint16_t opcode) {
+  uint8_t high = (opcode >> 12) & 0xF;
+  uint8_t low = opcode & 0xF;
+
+  switch (high) {
+    case 0x0: return (opcode == 0x00E0) ? 24 :
+                     (opcode == 0x00EE) ? 25 : 0;
+    case 0x1: return 1;
+    case 0x2: return 2;
+    case 0x3: return 3;
+    case 0x4: return 4;
+    case 0x5: return 5;
+    case 0x6: return 6;
+    case 0x7: return 7;
+    case 0x8: return 15 + low;   // 8XY0–8XYE = indices 15–23
+    case 0x9: return 9;
+    case 0xA: return 10;
+    case 0xB: return 11;
+    case 0xC: return 12;
+    case 0xD: return 13;
+    case 0xE: return (opcode & 0xFF) == 0x9E ? 26 : 27;
+    case 0xF:
+      switch (opcode & 0xFF) {
+        case 0x07: return 28;
+        case 0x0A: return 29;
+        case 0x15: return 30;
+        case 0x18: return 31;
+        case 0x1E: return 32;
+        case 0x29: return 33;
+        case 0x33: return 34;
+        case 0x55: return 35;
+        case 0x65: return 36;
+      }
+  } 
+  // Access into null and will be caught
+  return 0;
+}
 
 void Chip8LoadRom(struct Chip8 *chip8, uint8_t *rom, uint16_t size) {
   // Map rom into chip8 starting from 0x200
