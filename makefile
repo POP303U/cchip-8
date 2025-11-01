@@ -12,7 +12,7 @@ $(OUT):
 
 run:
 	$(CC) $(CFLAGS) $(SRC) -o $(OUT) `sdl2-config --cflags --libs`
-	./chip8
+	./chip8 $(FILE)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
