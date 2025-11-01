@@ -11,6 +11,8 @@
 
 #define ROM_START 0x200
 #define SCALE 20
+#define MS_PER_FRAME 20
+#define INS_PER_FRAME 16
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
@@ -58,26 +60,46 @@ int main(int argc, char *argv[]) {
   // Map Rom into memory space
   Chip8LoadRom(chip8, rom, sz);
 
-  // Debug
-  Chip8DumpMem(chip8);
-
   // Initialize keyboard input
   initKeyboard(&(chip8->kbd));
 
+  // Start cpu emulation with deltatime
+  uint64_t start, delta = 0;
   while (chip8->running) {
+    // Start counting ticks for frame timing
+    start = SDL_GetTicks64();
+
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
         chip8->running = false;
       }
 
-      // Keypad is 1234|qwer|asdf|yxcv
+      // Take in keyboard input and read into an array
       readKey(&(chip8->kbd), &event);
     }
+
+    // Wait until enough frames have passed to execute the next instruction
+    for (int i = 0; i < INS_PER_FRAME; i++) {
+      // FDES Execution cycle
+      Chip8FetchInstruction(chip8);
+      Chip8DecodeInstruction(chip8);
+      Chip8ExecuteInstruction(chip8);
+
+      // Debug opcodes
+      // debug(chip8, 200);
+    }
+
+    delta = MS_PER_FRAME - (SDL_GetTicks64() - start);
+    if (delta > 0) {
+      SDL_Delay(delta);
+    }
+
+    // Update timers depending on delta
+    Chip8UpdateState(chip8, delta);
 
     // Begin draw
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-
 
     // Draw framebuffer
     for (int y = 0; y < FB_HEIGHT; y++) {
@@ -88,21 +110,13 @@ int main(int argc, char *argv[]) {
           SDL_RenderFillRect(renderer, &rect);
         }
       }
-    } // End draw
-
-    // FDES Execution cycle
-    Chip8FetchInstruction(chip8);
-    Chip8DecodeInstruction(chip8);
-    Chip8ExecuteInstruction(chip8);
-
-    // Debug opcodes
-    debug(chip8);
+    }
 
     SDL_RenderPresent(renderer);
-    SDL_Delay(1); // ~60 FPS
+    // End draw
+    // printf("delta = end - start\n");
+    // printf("%f = %f - %f\n", delta, end, start);
   }
-
-  SDL_Delay(500);
 
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
