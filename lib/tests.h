@@ -7,6 +7,6 @@
 
 void TEST_framebuffer_smile(Chip8 *chip8);
 void romToBin(uint8_t *buf, int bytes_to_read);
-void debug(Chip8 *chip8);
+void debug(Chip8 *chip8, uint64_t cyclecount);
 
 #endif

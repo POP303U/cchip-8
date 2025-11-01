@@ -36,12 +36,17 @@ void romToBin(uint8_t *buf, int bytes_to_read) {
   }
 }
 
-void debug(Chip8 *chip8) {
-  printf("0x%04X - %04X", chip8->PC, chip8->ins.opcode);
-//  printf("cycle: %lld, Current instruction %04X, PC: %X, SP: %X I: %X\n", chip8->cycles, chip8->ins.opcode, chip8->PC, chip8->SP,
-//         chip8->I);
+// Prints out chip8 info for debugging
+void debug(Chip8 *chip8, uint64_t cyclecount) {
+  if (chip8->cycles > cyclecount && cyclecount != 0) {
+    printf("Cycle count exhausted\n");
+    exit(1);
+  }
+
+  printf("0x%04X - %04X || PC: 0x%02X SP: 0x%02X I: 0x%02X\n", chip8->PC,
+         chip8->ins.opcode, chip8->PC, chip8->SP, chip8->I);
   for (int i = 0; i < 16; i++) {
-    printf("   V%X: %02X | ", i, chip8->V[i]);
+    printf(" |  V%X: %02X \n", i, chip8->V[i]);
   }
   printf("\n");
 }
