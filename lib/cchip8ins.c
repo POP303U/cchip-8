@@ -125,15 +125,15 @@ void Chip8_8XY4(Chip8 *chip8) {
 // 0x8XY5/SUB Vx, Vy: Set Vx = Vx - Vy, set VF = NOT borrow
 void Chip8_8XY5(Chip8 *chip8) {
   // Sub to Vx with Vx - Vy with overflow flag
-  uint8_t sub = (uint8_t)(chip8->V[chip8->ins.x] - chip8->V[chip8->ins.y]);
+  uint16_t sub = (uint16_t)(chip8->V[chip8->ins.x] - chip8->V[chip8->ins.y]);
 
-  if (chip8->V[chip8->ins.y] < chip8->V[chip8->ins.x]) {
+  if (chip8->V[chip8->ins.x] >= chip8->V[chip8->ins.y]) {
     chip8->V[0xF] = 1;
   } else {
     chip8->V[0xF] = 0;
   }
 
-  chip8->V[chip8->ins.x] = sub;
+  chip8->V[chip8->ins.x] = sub & 0xFFu;
 }
 
 // 0x8XY6/SHR Vx {, Vy}: Set Vx SHR 1
@@ -151,20 +151,25 @@ void Chip8_8XY6(Chip8 *chip8) {
 // 0x8XY7/SUBN Vx, Vy: Set Vx = Vy - Vx, set VF = NOT borrow
 void Chip8_8XY7(Chip8 *chip8) {
   // Sub to Vx with Vx - Vy with overflow flag
-  uint8_t sub = (uint8_t)(chip8->V[chip8->ins.y] - chip8->V[chip8->ins.x]);
-  if (chip8->V[chip8->ins.y] > chip8->V[chip8->ins.x]) {
+  uint16_t sub = (uint16_t)(chip8->V[chip8->ins.y] - chip8->V[chip8->ins.x]);
+  if (chip8->V[chip8->ins.y] >= chip8->V[chip8->ins.x]) {
     chip8->V[0xF] = 1;
   } else {
     chip8->V[0xF] = 0;
   }
 
-  chip8->V[chip8->ins.x] = sub;
+  chip8->V[chip8->ins.x] = sub & 0xFFu;
 }
 
 // 0x8XYE/SHL Vx {, Vy}: Set Vx = Vx SHL 1
 void Chip8_8XYE(Chip8 *chip8) {
+  // This instruction is extremely ambiguous!
+
+  // Load Vy into Vx
+  chip8->V[chip8->ins.x] = chip8->V[chip8->ins.y];
+
   // If the most significant bit of Vx is 1, then set VF to 1 otherwise 0
-  if (GETBIT(chip8->V[chip8->ins.x], 7) == 1) {
+  if (GETBIT(chip8->V[chip8->ins.y], 7) == 1) {
     chip8->V[0xF] = 0x1;
   } else {
     chip8->V[0xF] = 0x0;
@@ -253,8 +258,7 @@ void Chip8_FX0A(Chip8 *chip8) {
     }
   }
 
-  // This works the same way as looping
-  chip8->PC -= 2;
+  //chip8->PC -= 2;
 }
 
 // 0xFX15/LD DT, Vx: Set delay timer = value of Vx
