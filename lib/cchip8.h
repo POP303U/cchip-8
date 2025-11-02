@@ -54,7 +54,7 @@ typedef struct Chip8 {
   // 16x8 Bytes V0-VF
   uint8_t V[16];
 
-  // 64 Byte stack
+  // 64 Word stack
   uint16_t stack[64];
 
   // Framebuffer
