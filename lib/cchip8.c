@@ -81,8 +81,8 @@ void Chip8ExecuteInstruction(Chip8 *chip8) {
   // Increase cycle count
   chip8->cycles++;
 
-  // Get funcptr index in the array
-  uint16_t index = Chip8GetOpcodeIndex(chip8->ins.opcode);  // custom function that maps opcode to table entry
+  // Custom function that maps opcode to table entry
+  uint16_t index = Chip8GetOpcodeIndex(chip8->ins.opcode);
 
   // Call function (with failsafe)
   if (chip8insTable[index] == NULL) {
@@ -91,6 +91,7 @@ void Chip8ExecuteInstruction(Chip8 *chip8) {
       exit(1);
   }
 
+  // Run opcode
   chip8insTable[index](chip8);
 }
 
