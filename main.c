@@ -11,7 +11,7 @@
 
 #define ROM_START 0x200
 #define SCALE 20
-#define MS_PER_FRAME 20
+#define MS_PER_FRAME 16
 #define INS_PER_FRAME 16
 
 static SDL_Window *window;
@@ -66,27 +66,28 @@ int main(int argc, char *argv[]) {
   // Start cpu emulation with deltatime
   uint64_t start, delta = 0;
   while (chip8->running) {
+    SDL_PollEvent(&event);
+
+    if (event.type == SDL_QUIT) {
+      chip8->running = false;
+    }
+
     // Start counting ticks for frame timing
     start = SDL_GetTicks64();
 
-    while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT) {
-        chip8->running = false;
-      }
-
-      // Take in keyboard input and read into an array
-      readKey(&(chip8->kbd), &event);
-    }
-
     // Wait until enough frames have passed to execute the next instruction
     for (int i = 0; i < INS_PER_FRAME; i++) {
+      // Debug opcodes
+      debug(chip8, 0);
+
       // FDES Execution cycle
       Chip8FetchInstruction(chip8);
       Chip8DecodeInstruction(chip8);
       Chip8ExecuteInstruction(chip8);
+      Chip8UpdateState(chip8, delta);
 
-      // Debug opcodes
-      // debug(chip8, 200);
+      // Take in keyboard input and read into an array
+      readKey(&(chip8->kbd), &event);
     }
 
     delta = MS_PER_FRAME - (SDL_GetTicks64() - start);
@@ -94,11 +95,8 @@ int main(int argc, char *argv[]) {
       SDL_Delay(delta);
     }
 
-    // Update timers depending on delta
-    Chip8UpdateState(chip8, delta);
-
     // Begin draw
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 153, 102, 1, 1);
     SDL_RenderClear(renderer);
 
     // Draw framebuffer
@@ -106,7 +104,7 @@ int main(int argc, char *argv[]) {
       for (int x = 0; x < FB_WIDTH; x++) {
         if (chip8->framebuffer[y * FB_WIDTH + x]) {
           SDL_Rect rect = {x * SCALE, y * SCALE, SCALE, SCALE};
-          SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green
+          SDL_SetRenderDrawColor(renderer, 255, 204, 1, 1);
           SDL_RenderFillRect(renderer, &rect);
         }
       }
