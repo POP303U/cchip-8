@@ -1,8 +1,9 @@
 #include "cchip8ins.h"
 #include "cchip8.h"
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 // The array with all the functions.
@@ -193,7 +194,10 @@ void Chip8_BNNN(Chip8 *chip8) {
 }
 
 // 0xCXKK/RND Vx, byte: Set Vx = random byte AND kk
-void Chip8_CXKK(Chip8 *chip8) { chip8->V[chip8->ins.x] = 0x30; }
+void Chip8_CXKK(Chip8 *chip8) {
+  // Modulo of 256 guarantees a range of 0-256
+  chip8->V[chip8->ins.x] = (rand() % 256) & chip8->ins.kk;
+}
 
 // 0xDXYN/DRW Vx, Vy, nibble: Display n-byte starting at memory location I at
 // (Vx, Vy)
@@ -240,16 +244,17 @@ void Chip8_FX07(Chip8 *chip8) {
   chip8->V[chip8->ins.x] = chip8->delayReg;
 }
 
-// 0xFX0A/LD Vx, K: Wait for a key press, store the value of the key in Vx
+// 0xFX0A/LD Vx, K: Wait for a key release, store the value of the key in Vx
 void Chip8_FX0A(Chip8 *chip8) {
   for (uint8_t i = 0; i < 16; i++) {
     if (chip8->kbd.keys[i]) {
       chip8->V[chip8->ins.x] = i;
+      return;
     }
   }
 
-  // This works the same way as halting
-  // chip8->PC -= 2;
+  // This works the same way as looping
+  chip8->PC -= 2;
 }
 
 // 0xFX15/LD DT, Vx: Set delay timer = value of Vx
