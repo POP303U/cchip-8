@@ -54,6 +54,9 @@ void Chip8FetchInstruction(Chip8 *chip8) {
 
   // Save current executing opcode into the chip8
   chip8->ins.opcode = opcode;
+
+  // Pre-increment PC
+  chip8->PC += 2;
 }
 
 // Decode the current Instruction and fill Instruction struct
@@ -75,8 +78,6 @@ void Chip8DecodeInstruction(Chip8 *chip8) {
 // Reads the processed opcodes and fetches the corresponding function to
 // execute, funcptr tables only work with unique lbit signatures...
 void Chip8ExecuteInstruction(Chip8 *chip8) {
-  // Preincrement PC
-  chip8->PC += 2;
 
   // Increase cycle count
   chip8->cycles++;
@@ -87,7 +88,6 @@ void Chip8ExecuteInstruction(Chip8 *chip8) {
   // Call function (with failsafe)
   if (chip8insTable[index] == NULL) {
       fprintf(stderr, "Access into NULL at chip8insTable[%d]\n", index);
-      fprintf(stderr, "Probably encountered an invalid instruction\n");
       exit(1);
   }
 
@@ -95,9 +95,16 @@ void Chip8ExecuteInstruction(Chip8 *chip8) {
   chip8insTable[index](chip8);
 }
 
-void Chip8UpdateState(Chip8 *chip8, uint64_t delta) {
-  // Decrement delayReg by the amount of instructions?
-  chip8->delayReg -= delta;
+void Chip8UpdateState(Chip8 *chip8) {
+  // Decrement delayReg for each instruction run
+  if (chip8->delayReg > 0) {
+    chip8->delayReg -= 1;
+  }
+  
+  // Decrement soundTimer for each instruction run
+  if (chip8->soundTimer > 0) {
+    chip8->soundTimer -= 1;
+  }
 }
 
 uint8_t Chip8GetOpcodeIndex(uint16_t opcode) {

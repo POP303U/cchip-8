@@ -11,8 +11,8 @@
 
 #define ROM_START 0x200
 #define SCALE 20
-#define MS_PER_FRAME 16
-#define INS_PER_FRAME 16
+#define MS_PER_FRAME 30
+#define INS_PER_FRAME 20
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
@@ -77,14 +77,14 @@ int main(int argc, char *argv[]) {
 
     // Wait until enough frames have passed to execute the next instruction
     for (int i = 0; i < INS_PER_FRAME; i++) {
-      // Debug opcodes
+      // Debug opcodes, setting cycle count to 0 lets it run forever
       debug(chip8, 0);
 
       // FDES Execution cycle
       Chip8FetchInstruction(chip8);
       Chip8DecodeInstruction(chip8);
       Chip8ExecuteInstruction(chip8);
-      Chip8UpdateState(chip8, delta);
+      Chip8UpdateState(chip8);
 
       // Take in keyboard input and read into an array
       readKey(&(chip8->kbd), &event);

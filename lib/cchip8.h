@@ -86,7 +86,7 @@ void Chip8DumpMem(Chip8 *chip8);
 void Chip8FetchInstruction(Chip8 *chip8);
 void Chip8DecodeInstruction(Chip8 *chip8);
 void Chip8ExecuteInstruction(Chip8 *chip8);
-void Chip8UpdateState(Chip8 *chip8, uint64_t delta);
+void Chip8UpdateState(Chip8 *chip8);
 
 // Helper function for Chip8ExecuteInstruction, gets function out of funcptr
 // table based on opcode
