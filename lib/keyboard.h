@@ -12,7 +12,7 @@
 #define KEY_COUNT 16
 
 typedef struct Keyboard {
-    bool keys[KEY_COUNT];
+  bool keys[KEY_COUNT];
 } Keyboard;
 
 // Process input
