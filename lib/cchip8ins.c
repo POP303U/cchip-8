@@ -252,13 +252,13 @@ void Chip8_FX07(Chip8 *chip8) {
 // 0xFX0A/LD Vx, K: Wait for a key release, store the value of the key in Vx
 void Chip8_FX0A(Chip8 *chip8) {
   for (uint8_t i = 0; i < 16; i++) {
-    if (chip8->kbd.keys[i]) {
+    if (chip8->kbd.keys[i] == 0 && chip8->kbd.prevKeys[i] == 1) {
       chip8->V[chip8->ins.x] = i;
       return;
     }
   }
 
-  //chip8->PC -= 2;
+  chip8->PC -= 2;
 }
 
 // 0xFX15/LD DT, Vx: Set delay timer = value of Vx

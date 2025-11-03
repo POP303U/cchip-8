@@ -13,6 +13,7 @@
 
 typedef struct Keyboard {
   bool keys[KEY_COUNT];
+  bool prevKeys[KEY_COUNT];
 } Keyboard;
 
 // Process input

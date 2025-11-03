@@ -80,14 +80,14 @@ int main(int argc, char *argv[]) {
       // Debug opcodes, setting cycle count to 0 lets it run forever
       debug(chip8, 0);
 
+      // Take in keyboard input and read into an array
+      readKey(&(chip8->kbd), &event);
+
       // FDES Execution cycle
       Chip8FetchInstruction(chip8);
       Chip8DecodeInstruction(chip8);
       Chip8ExecuteInstruction(chip8);
       Chip8UpdateState(chip8);
-
-      // Take in keyboard input and read into an array
-      readKey(&(chip8->kbd), &event);
     }
 
     delta = MS_PER_FRAME - (SDL_GetTicks64() - start);

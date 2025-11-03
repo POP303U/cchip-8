@@ -105,6 +105,11 @@ void Chip8UpdateState(Chip8 *chip8) {
   if (chip8->soundTimer > 0) {
     chip8->soundTimer -= 1;
   }
+
+  // Load keys from last frame into array for 0xFX0A
+  for (int i = 0; i < KEY_COUNT; i++) {
+    chip8->kbd.prevKeys[i] = chip8->kbd.keys[i];
+  }
 }
 
 uint8_t Chip8GetOpcodeIndex(uint16_t opcode) {
@@ -121,7 +126,7 @@ uint8_t Chip8GetOpcodeIndex(uint16_t opcode) {
     case 0x5: return 5;
     case 0x6: return 6;
     case 0x7: return 7;
-    case 0x8: return 15 + low;   // 8XY0–8XYE = indices 15–23
+    case 0x8: return (opcode & 0xF) == 0xE ? 23 : 15 + low;   // 8XY0–8XYE = indices 15–23
     case 0x9: return 9;
     case 0xA: return 10;
     case 0xB: return 11;
