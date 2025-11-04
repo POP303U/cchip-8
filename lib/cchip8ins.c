@@ -93,18 +93,27 @@ void Chip8_8XY0(Chip8 *chip8) {
 void Chip8_8XY1(Chip8 *chip8) {
   // OR Vx and Vy and store the result in Vx
   chip8->V[chip8->ins.x] |= chip8->V[chip8->ins.y];
+
+  // Satisfy reset flags quirk
+  chip8->V[0xF] = 0x0;
 }
 
 // 0x8XY2/AND Vx, Vy: Set Vx = Vx AND Vy
 void Chip8_8XY2(Chip8 *chip8) {
   // AND Vx and Vy and store the result in Vx
   chip8->V[chip8->ins.x] &= chip8->V[chip8->ins.y];
+
+  // Satisfy reset flags quirk
+  chip8->V[0xF] = 0x0;
 }
 
 // 0x8XY3/XOR Vx, Vy: Set Vx = Vx XOR Vy
 void Chip8_8XY3(Chip8 *chip8) {
   // XOR Vx and Vy and store the result in Vx
   chip8->V[chip8->ins.x] ^= chip8->V[chip8->ins.y];
+
+  // Satisfy reset flags quirk
+  chip8->V[0xF] = 0x0;
 }
 
 // 0x8XY4/ADD Vx, Vy: Set Vx += Vy, set VF = carry
@@ -144,14 +153,14 @@ void Chip8_8XY5(Chip8 *chip8) {
 void Chip8_8XY6(Chip8 *chip8) {
   // This instruction is extremely ambiguous!
 
-  // Use temp to preserve VF flags
-  uint16_t temp = chip8->V[chip8->ins.y];
+  // Load Vy into Vx (quirk)
+  chip8->V[chip8->ins.x] = chip8->V[chip8->ins.y];
 
   // Load the right shifted Vy value and into Vx
   chip8->V[chip8->ins.x] = (chip8->V[chip8->ins.y] >> 1) & 0xFF;
 
   // If the least significant bit of Vx is 1, then set VF to 1 otherwise 0
-  if (GETBIT(temp, 7) == 1) {
+  if (GETBIT(chip8->V[chip8->ins.y], 7) == 1) {
     chip8->V[0xF] = 0x1;
   } else {
     chip8->V[0xF] = 0x0;
@@ -179,14 +188,14 @@ void Chip8_8XY7(Chip8 *chip8) {
 void Chip8_8XYE(Chip8 *chip8) {
   // This instruction is extremely ambiguous!
 
-  // Use temp to preserve VF flags
-  uint16_t temp = chip8->V[chip8->ins.y];
+  // Load Vy into Vx (quirk)
+  chip8->V[chip8->ins.x] = chip8->V[chip8->ins.y];
 
   // Load the left shifted Vy value and into Vx
   chip8->V[chip8->ins.x] = (chip8->V[chip8->ins.y] << 1) & 0xFF;
 
   // If the most significant bit of Vx is 1, then set VF to 1 otherwise 0
-  if (GETBIT(temp, 0) == 1) {
+  if (GETBIT(chip8->V[chip8->ins.y], 0) == 1) {
     chip8->V[0xF] = 0x1;
   } else {
     chip8->V[0xF] = 0x0;
@@ -209,7 +218,7 @@ void Chip8_ANNN(Chip8 *chip8) {
 
 // 0xBNNN/JP V0, addr: The Program counter is set to NNN plus the value of V0
 void Chip8_BNNN(Chip8 *chip8) {
-  uint16_t jmpaddr = chip8->ins.nnn + chip8->V[0];
+  uint16_t jmpaddr = chip8->ins.nnn + chip8->V[(chip8->ins.nnn & 0xF00) >> 12];
   chip8->PC = jmpaddr;
 }
 
@@ -222,24 +231,41 @@ void Chip8_CXKK(Chip8 *chip8) {
 // 0xDXYN/DRW Vx, Vy, nibble: Display n-byte starting at memory location I at
 // (Vx, Vy)
 void Chip8_DXYN(Chip8 *chip8) {
+  // DXYN Starts by resetting VF
+  chip8->V[0xF] = 0;
+
   uint8_t Vx = chip8->V[chip8->ins.x] % 64;
   uint8_t Vy = chip8->V[chip8->ins.y] % 32;
 
   for (uint8_t n = 0; n < chip8->ins.n; n++) {
     uint8_t Ibyte = chip8->memory[chip8->I + n];
 
-    for (uint8_t x = 0; x < 8; x++) {
-      uint16_t xy = (Vx + x) + (64 * Vy);
-      uint8_t pixel = GETBIT(Ibyte, x);
+    // Check for wrap every time we load n-more data (down)
+    uint8_t y = (Vy + n) % 32;
+
+    // Break if we go out of bounds (clipping)
+    if ((Vy + n) >= 32) {
+        break;
+    }
+    for (uint8_t bit = 0; bit < 8; bit++) {
+    // Break if we go out of bounds (clipping)
+      if ((Vx + bit) >= 64) {
+          break;
+      }
+      // Check for wrap every time we write into x + bit
+      uint8_t x = (Vx + bit) % 64;
+      uint16_t xy = x + (y * 64);
+
+      uint8_t pixel = GETBIT(Ibyte, bit);
 
       // If a sprite collides with a pixel set VF = 1 otherwise 0
-      chip8->V[0xF] = (chip8->framebuffer[xy]);
+      if (chip8->framebuffer[xy]) {
+        chip8->V[0xF] = 1;
+      }
 
       // Set each bit into the framebuffer (in big endian)
       chip8->framebuffer[xy] ^= pixel;
     }
-
-    Vy += 1;
   }
 }
 
@@ -321,6 +347,9 @@ void Chip8_FX55(Chip8 *chip8) {
   for (uint16_t reg = 0; reg <= chip8->ins.x; reg++) {
     chip8->memory[chip8->I + reg] = chip8->V[reg];
   }
+
+  // Quirk behaviour
+  chip8->I = chip8->I + chip8->ins.x + 1;
 }
 
 // 0xFX65/LD Vx, [I]: Read registers V0 through Vx starting at mem location I
@@ -328,4 +357,7 @@ void Chip8_FX65(Chip8 *chip8) {
   for (uint16_t reg = 0; reg <= chip8->ins.x; reg++) {
     chip8->V[reg] = chip8->memory[chip8->I + reg];
   }
+
+  // Quirk behaviour
+  chip8->I = chip8->I + chip8->ins.x + 1;
 }

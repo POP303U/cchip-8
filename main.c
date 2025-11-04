@@ -11,8 +11,8 @@
 
 #define ROM_START 0x200
 #define SCALE 20
-#define MS_PER_FRAME 30
-#define INS_PER_FRAME 20
+#define MS_PER_FRAME 6
+#define INS_PER_FRAME 16
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
@@ -87,8 +87,14 @@ int main(int argc, char *argv[]) {
       Chip8FetchInstruction(chip8);
       Chip8DecodeInstruction(chip8);
       Chip8ExecuteInstruction(chip8);
-      Chip8UpdateState(chip8);
+
+      // Approxmiation of draw instruction, draw is very expensive so exit
+      if ((chip8->ins.opcode & 0xF000) == 0xD000) {
+        break;        
+      }
     }
+    
+    Chip8UpdateState(chip8);
 
     delta = MS_PER_FRAME - (SDL_GetTicks64() - start);
     if (delta > 0) {
