@@ -46,7 +46,7 @@ void debug(Chip8 *chip8, uint64_t cyclecount) {
   printf("0x%04X - %04X || PC: 0x%02X SP: 0x%02X I: 0x%02X\n", chip8->PC,
          chip8->ins.opcode, chip8->PC, chip8->SP, chip8->I);
   for (int i = 0; i < 16; i++) {
-    printf(" |  V%X: %02X \n", i, chip8->V[i]);
+    printf(" |  V%X: %02X . %03d\n", i, chip8->V[i], chip8->V[i]);
   }
   printf("\n");
 }
