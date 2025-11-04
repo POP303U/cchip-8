@@ -19,3 +19,4 @@ run:
 
 clean:
 	rm -f $(OBJ) $(OUT)
+	rm log
