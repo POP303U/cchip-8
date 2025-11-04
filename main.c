@@ -11,7 +11,7 @@
 
 #define ROM_START 0x200
 #define SCALE 20
-#define MS_PER_FRAME 6
+#define MS_PER_FRAME 16
 #define INS_PER_FRAME 16
 
 static SDL_Window *window;
