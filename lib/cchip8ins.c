@@ -112,14 +112,14 @@ void Chip8_8XY4(Chip8 *chip8) {
   // Add Vy to Vx with overflow flag
   uint16_t sum = (uint16_t)(chip8->V[chip8->ins.x] + chip8->V[chip8->ins.y]);
 
-  // sum has to be a uint16_t in order to check for overflow
+  chip8->V[chip8->ins.x] = sum & 0xFFu;
+
+  // Use sum to check for result before operation so flags are set correctly
   if (sum > 255) {
     chip8->V[0xF] = 0x1;
   } else {
     chip8->V[0xF] = 0x0;
   }
-
-  chip8->V[chip8->ins.x] = sum & 0xFFu;
 }
 
 // 0x8XY5/SUB Vx, Vy: Set Vx = Vx - Vy, set VF = NOT borrow
@@ -127,55 +127,70 @@ void Chip8_8XY5(Chip8 *chip8) {
   // Sub to Vx with Vx - Vy with overflow flag
   uint16_t sub = (uint16_t)(chip8->V[chip8->ins.x] - chip8->V[chip8->ins.y]);
 
-  if (chip8->V[chip8->ins.x] >= chip8->V[chip8->ins.y]) {
-    chip8->V[0xF] = 1;
-  } else {
-    chip8->V[0xF] = 0;
-  }
+  // Use temp to preserve VF flags
+  uint8_t temp = chip8->V[chip8->ins.x];
 
   chip8->V[chip8->ins.x] = sub & 0xFFu;
-}
 
-// 0x8XY6/SHR Vx {, Vy}: Set Vx SHR 1
-void Chip8_8XY6(Chip8 *chip8) {
-  // If the least significant bit of Vx is 1, then set VF to 1 otherwise 0
-  if (GETBIT(chip8->V[chip8->ins.x], 0) == 1) {
+  // This has to be performed last to pass flags
+  if (temp >= chip8->V[chip8->ins.y]) {
     chip8->V[0xF] = 0x1;
   } else {
     chip8->V[0xF] = 0x0;
   }
+}
 
-  chip8->V[chip8->ins.x] >>= 1;
+// 0x8XY6/SHR Vx {, Vy}: Set Vx SHR 1
+void Chip8_8XY6(Chip8 *chip8) {
+  // This instruction is extremely ambiguous!
+
+  // Use temp to preserve VF flags
+  uint16_t temp = chip8->V[chip8->ins.y];
+
+  // Load the right shifted Vy value and into Vx
+  chip8->V[chip8->ins.x] = (chip8->V[chip8->ins.y] >> 1) & 0xFF;
+
+  // If the least significant bit of Vx is 1, then set VF to 1 otherwise 0
+  if (GETBIT(temp, 7) == 1) {
+    chip8->V[0xF] = 0x1;
+  } else {
+    chip8->V[0xF] = 0x0;
+  }
 }
 
 // 0x8XY7/SUBN Vx, Vy: Set Vx = Vy - Vx, set VF = NOT borrow
 void Chip8_8XY7(Chip8 *chip8) {
   // Sub to Vx with Vx - Vy with overflow flag
   uint16_t sub = (uint16_t)(chip8->V[chip8->ins.y] - chip8->V[chip8->ins.x]);
-  if (chip8->V[chip8->ins.y] >= chip8->V[chip8->ins.x]) {
-    chip8->V[0xF] = 1;
-  } else {
-    chip8->V[0xF] = 0;
-  }
+
+  // Use temp to preserve VF flags
+  uint8_t temp = chip8->V[chip8->ins.x];
 
   chip8->V[chip8->ins.x] = sub & 0xFFu;
+
+  if (chip8->V[chip8->ins.y] >= temp) {
+    chip8->V[0xF] = 0x1;
+  } else {
+    chip8->V[0xF] = 0x0;
+  }
 }
 
 // 0x8XYE/SHL Vx {, Vy}: Set Vx = Vx SHL 1
 void Chip8_8XYE(Chip8 *chip8) {
   // This instruction is extremely ambiguous!
 
-  // Load Vy into Vx
-  chip8->V[chip8->ins.x] = chip8->V[chip8->ins.y];
+  // Use temp to preserve VF flags
+  uint16_t temp = chip8->V[chip8->ins.y];
+
+  // Load the left shifted Vy value and into Vx
+  chip8->V[chip8->ins.x] = (chip8->V[chip8->ins.y] << 1) & 0xFF;
 
   // If the most significant bit of Vx is 1, then set VF to 1 otherwise 0
-  if (GETBIT(chip8->V[chip8->ins.y], 7) == 1) {
+  if (GETBIT(temp, 0) == 1) {
     chip8->V[0xF] = 0x1;
   } else {
     chip8->V[0xF] = 0x0;
   }
-
-  chip8->V[chip8->ins.x] <<= 1;
 }
 
 // 0x9XY0/SNE Vx, Vy: Skip next instruction if Vx != Vy
