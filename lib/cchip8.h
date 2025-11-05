@@ -23,7 +23,6 @@
 
 typedef struct Instruction {
   uint16_t opcode;
-  uint16_t lbit;
   uint16_t nnn;
   uint8_t n;
   uint8_t x;
