@@ -1,4 +1,5 @@
 #include "cchip8.h"
+#include "tests.h"
 #include "cchip8ins.h"
 #include "font.h"
 #include "keyboard.h"
@@ -56,6 +57,9 @@ void Chip8FetchInstruction(Chip8 *chip8) {
   // Save current executing opcode into the chip8
   chip8->ins.opcode = opcode;
 
+
+      // Debug opcodes, setting cycle count to 0 lets it run forever
+      debug(chip8, 0);
   // Pre-increment PC
   chip8->PC += 2;
 }

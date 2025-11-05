@@ -43,10 +43,10 @@ void debug(Chip8 *chip8, uint64_t cyclecount) {
     exit(1);
   }
 
-  printf("0x%04X - %04X || PC: 0x%02X SP: 0x%02X I: 0x%02X\n", chip8->PC,
-         chip8->ins.opcode, chip8->PC, chip8->SP, chip8->I);
-  for (int i = 0; i < 16; i++) {
-    printf(" |  V%X: %02X . %03d\n", i, chip8->V[i], chip8->V[i]);
-  }
+  // format:
+  // [<frame%256>:<cycle%65536>] <pc>:<opcode> V=[<registers>] I=<index> SP=<stackpointer>
+  printf("[01:%04llx] %04x:%04x V=[%02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x  %02x %02x %02x %02x] I=%04x SP=%x",
+  chip8->cycles, chip8->PC, chip8->ins.opcode, chip8->V[0], chip8->V[1], chip8->V[2], chip8->V[3], chip8->V[4], chip8->V[5], chip8->V[6], chip8->V[7], chip8->V[8], chip8->V[9], chip8->V[0xA], chip8->V[0xB], chip8->V[0xC], chip8->V[0xD], chip8->V[0xE], chip8->V[0xF], chip8->I, chip8->SP);
+
   printf("\n");
 }

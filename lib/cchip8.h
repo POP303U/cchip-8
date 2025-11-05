@@ -11,7 +11,7 @@
 
 // Memory mapping
 #define ROM_START 0x200
-#define FONT_START 0x50
+#define FONT_START 0x000
 #define FONTSET_SIZE 80
 
 // File reading

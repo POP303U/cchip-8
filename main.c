@@ -11,7 +11,7 @@
 
 #define ROM_START 0x200
 #define SCALE 20
-#define MS_PER_FRAME 4
+#define MS_PER_FRAME 5
 #define INS_PER_FRAME 16
 
 static SDL_Window *window;
@@ -75,15 +75,15 @@ int main(int argc, char *argv[]) {
     // Start counting ticks for frame timing
     start = SDL_GetTicks64();
 
+    // Take in keyboard input and read into an array
+    readKey(&(chip8->kbd), &event);
+
+    // Update timers, delays
+    Chip8UpdateState(chip8);
+
     // Wait until enough frames have passed to execute the next instruction
     for (int i = 0; i < INS_PER_FRAME; i++) {
-      // Debug opcodes, setting cycle count to 0 lets it run forever
-      debug(chip8, 0);
-
-      // Take in keyboard input and read into an array
-      readKey(&(chip8->kbd), &event);
-
-      // FDES Execution cycle
+      // FDE Execution cycle
       Chip8FetchInstruction(chip8);
       Chip8DecodeInstruction(chip8);
       Chip8ExecuteInstruction(chip8);
@@ -93,8 +93,6 @@ int main(int argc, char *argv[]) {
         break;        
       }
     }
-    
-    Chip8UpdateState(chip8);
 
     delta = MS_PER_FRAME - (SDL_GetTicks64() - start);
     if (delta > 0) {
