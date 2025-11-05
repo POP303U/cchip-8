@@ -9,6 +9,7 @@
 #include <string.h>
 #include <time.h>
 
+// Creates a new Chip8 struct to return a pointer to
 Chip8 *Chip8InitCpu() {
   Chip8 *chip8 = malloc(sizeof(Chip8));
   Instruction *ins = malloc(sizeof(Instruction));
@@ -76,7 +77,7 @@ void Chip8DecodeInstruction(Chip8 *chip8) {
 }
 
 // Reads the processed opcodes and fetches the corresponding function to
-// execute, funcptr tables only work with unique lbit signatures...
+// funcptr tables only work with unique lbit signatures...
 void Chip8ExecuteInstruction(Chip8 *chip8) {
 
   // Increase cycle count
@@ -115,6 +116,11 @@ void Chip8UpdateState(Chip8 *chip8) {
 uint8_t Chip8GetOpcodeIndex(uint16_t opcode) {
   uint8_t high = (opcode >> 12) & 0xF;
   uint8_t low = opcode & 0xF;
+
+  //// For functions with an unique high bit
+  //if ((high >= 0x1 && high <= 0x7) || (high >= 0x9 && high <= 0xD)) {
+  //  return high; 
+  //}
 
   switch (high) {
     case 0x0: return (opcode == 0x00E0) ? 24 :
