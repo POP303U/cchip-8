@@ -6,11 +6,8 @@
 #ifndef CCHIP8_H_
 #define CCHIP8_H_
 
-// Gets a bit from a byte at an index
+// Gets a bit from a byte at an index starting at the MSB
 #define GETBIT(byte, x) (((byte) >> (7 - (x))) & 1)
-
-// Turns the input into a big-endian number
-#define SWAPBYTE(i) ((i & 0xF0) >> 4) | ((i & 0x0F) << 4)
 
 // Memory mapping
 #define ROM_START 0x200
