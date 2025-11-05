@@ -11,7 +11,7 @@
 
 #define ROM_START 0x200
 #define SCALE 20
-#define MS_PER_FRAME 5
+#define MS_PER_FRAME 10
 #define INS_PER_FRAME 16
 
 static SDL_Window *window;
@@ -28,25 +28,18 @@ int main(int argc, char *argv[]) {
   }
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s",
-                 SDL_GetError());
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
     return 3;
   }
 
-  // Not getting this right caused so many bugs oml
-  if (SDL_CreateWindowAndRenderer(FB_WIDTH * SCALE, FB_HEIGHT * SCALE, false,
-                                  &window, &renderer)) {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                 "Couldn't create window and renderer: %s", SDL_GetError());
+  // Set Window size based on size of pixels
+  if (SDL_CreateWindowAndRenderer(FB_WIDTH * SCALE, FB_HEIGHT * SCALE, false, &window, &renderer)) {
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window and renderer: %s", SDL_GetError());
     return 3;
   }
 
-  SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
-  SDL_RenderClear(renderer);
-  SDL_RenderPresent(renderer);
-
-  // Set render color to green ( rect will be rendered in this color )
-  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  // Set Window Titles
+  SDL_SetWindowTitle(window, "Chip-8 Emulator in C and SDL2");
 
   // CHIP-8 STARTUP
 
@@ -64,7 +57,7 @@ int main(int argc, char *argv[]) {
   initKeyboard(&(chip8->kbd));
 
   // Start cpu emulation with deltatime
-  uint64_t start, delta = 0;
+  int64_t start, delta = 0;
   while (chip8->running) {
     SDL_PollEvent(&event);
 
@@ -94,13 +87,16 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    delta = MS_PER_FRAME - (SDL_GetTicks64() - start);
+    // Calculate deltatime to keep running at constant speed
+    delta = (MS_PER_FRAME - (SDL_GetTicks64() - start));
     if (delta > 0) {
       SDL_Delay(delta);
     }
+    delta = 0;
 
     // Begin draw
-    SDL_SetRenderDrawColor(renderer, 153, 102, 1, 1);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    // SDL_SetRenderDrawColor(renderer, 153, 102, 1, 1);
     SDL_RenderClear(renderer);
 
     // Draw framebuffer
@@ -108,7 +104,7 @@ int main(int argc, char *argv[]) {
       for (int x = 0; x < FB_WIDTH; x++) {
         if (chip8->framebuffer[y * FB_WIDTH + x]) {
           SDL_Rect rect = {x * SCALE, y * SCALE, SCALE, SCALE};
-          SDL_SetRenderDrawColor(renderer, 255, 204, 1, 1);
+          SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
           SDL_RenderFillRect(renderer, &rect);
         }
       }
