@@ -153,6 +153,9 @@ void Chip8_8XY5(Chip8 *chip8) {
 void Chip8_8XY6(Chip8 *chip8) {
   // This instruction is extremely ambiguous!
 
+  // Preserve VF registers
+  uint8_t temp = chip8->V[chip8->ins.y];
+
   // Load Vy into Vx (quirk)
   chip8->V[chip8->ins.x] = chip8->V[chip8->ins.y];
 
@@ -160,7 +163,7 @@ void Chip8_8XY6(Chip8 *chip8) {
   chip8->V[chip8->ins.x] = (chip8->V[chip8->ins.y] >> 1) & 0xFF;
 
   // If the least significant bit of Vx is 1, then set VF to 1 otherwise 0
-  if (GETBIT(chip8->V[chip8->ins.y], 7) == 1) {
+  if (GETBIT(temp, 7) == 1) {
     chip8->V[0xF] = 0x1;
   } else {
     chip8->V[0xF] = 0x0;
@@ -188,6 +191,9 @@ void Chip8_8XY7(Chip8 *chip8) {
 void Chip8_8XYE(Chip8 *chip8) {
   // This instruction is extremely ambiguous!
 
+  // Preserve VF registers
+  uint8_t temp = chip8->V[chip8->ins.y];
+
   // Load Vy into Vx (quirk)
   chip8->V[chip8->ins.x] = chip8->V[chip8->ins.y];
 
@@ -195,7 +201,7 @@ void Chip8_8XYE(Chip8 *chip8) {
   chip8->V[chip8->ins.x] = (chip8->V[chip8->ins.y] << 1) & 0xFF;
 
   // If the most significant bit of Vx is 1, then set VF to 1 otherwise 0
-  if (GETBIT(chip8->V[chip8->ins.y], 0) == 1) {
+  if (GETBIT(temp, 0) == 1) {
     chip8->V[0xF] = 0x1;
   } else {
     chip8->V[0xF] = 0x0;
@@ -224,18 +230,19 @@ void Chip8_BNNN(Chip8 *chip8) {
 
 // 0xCXKK/RND Vx, byte: Set Vx = random byte AND kk
 void Chip8_CXKK(Chip8 *chip8) {
-  // Modulo of 256 guarantees a range of 0-256
+  // Modulo of 256 guarantees a range of 0-255
   chip8->V[chip8->ins.x] = (rand() % 256) & chip8->ins.kk;
 }
 
 // 0xDXYN/DRW Vx, Vy, nibble: Display n-byte starting at memory location I at
 // (Vx, Vy)
 void Chip8_DXYN(Chip8 *chip8) {
-  // DXYN Starts by resetting VF
-  chip8->V[0xF] = 0;
-
+  // Set coordinates before resetting VF
   uint8_t Vx = chip8->V[chip8->ins.x] % 64;
   uint8_t Vy = chip8->V[chip8->ins.y] % 32;
+
+  // DXYN Starts by resetting VF which is used for collision
+  chip8->V[0xF] = 0;
 
   for (uint8_t n = 0; n < chip8->ins.n; n++) {
     uint8_t Ibyte = chip8->memory[chip8->I + n];
