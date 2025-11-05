@@ -3,6 +3,7 @@ CC = gcc
 CFLAGS = -std=c99 -Wpedantic -Wall -Wextra -O2
 SRC = main.c lib/cchip8.c lib/cchip8ins.c lib/tests.c lib/font.c lib/keyboard.c
 OBJ = $(SRC:.c=.o)
+LOG = $(SRC:.log)
 OUT = chip8
 
 all: $(OBJ)
@@ -18,5 +19,4 @@ run:
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(OUT)
-	rm log
+	rm -f $(OBJ) $(OUT) $(LOG)
