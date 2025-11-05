@@ -29,8 +29,8 @@ void Chip8_00E0(Chip8 *chip8) {
 // 0x00EE/RET: Return from a subroutine
 void Chip8_00EE(Chip8 *chip8) {
   // Pop last address from the stack and use it as PC
-  chip8->PC = chip8->stack[chip8->SP];
   chip8->SP -= 1;
+  chip8->PC = chip8->stack[chip8->SP];
 }
 
 // 0x1NNN/JP addr: Jump to location NNN
@@ -42,9 +42,9 @@ void Chip8_1NNN(Chip8 *chip8) {
 // 0x2NNN/CALL addr: Call subroutine at NNN
 void Chip8_2NNN(Chip8 *chip8) {
   // Push PC onto the stack, then put NNN into PC
-  chip8->SP += 1;
   chip8->stack[chip8->SP] = chip8->PC;
   chip8->PC = chip8->ins.nnn;
+  chip8->SP += 1;
 }
 
 // 0x3XKK/SE Vx, byte: Skip next instruction if Vx == kk
