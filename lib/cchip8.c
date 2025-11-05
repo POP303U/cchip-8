@@ -126,13 +126,13 @@ uint8_t Chip8GetOpcodeIndex(uint16_t opcode) {
     case 0x5: return 5;
     case 0x6: return 6;
     case 0x7: return 7;
-    case 0x8: return (opcode & 0xF) == 0xE ? 23 : 15 + low;   // 8XY0–8XYE = indices 15–23
     case 0x9: return 9;
     case 0xA: return 10;
     case 0xB: return 11;
     case 0xC: return 12;
     case 0xD: return 13;
-    case 0xE: return (opcode & 0xFF) == 0x9E ? 26 : 27;
+    case 0x8: return (opcode & 0xF) == 0xE ? 23 : 15 + low;   // 8XY0–8XYE = indices 15–23
+    case 0xE: return (opcode & 0xFF) == 0x9E ? 26 : 27; //EX9E, EXA1
     case 0xF:
       switch (opcode & 0xFF) {
         case 0x07: return 28;
