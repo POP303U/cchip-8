@@ -237,43 +237,46 @@ void Chip8_CXKK(Chip8 *chip8) {
 // 0xDXYN/DRW Vx, Vy, nibble: Display n-byte starting at memory location I at
 // (Vx, Vy)
 void Chip8_DXYN(Chip8 *chip8) {
-  // Set coordinates before resetting VF
-  uint8_t Vx = chip8->V[chip8->ins.x] % 64;
-  uint8_t Vy = chip8->V[chip8->ins.y] % 32;
+    // Set coordinates before resetting VF
+    uint8_t Vx = chip8->V[chip8->ins.x] % 64;
+    uint8_t Vy = chip8->V[chip8->ins.y] % 32;
+    uint8_t x;
 
-  // DXYN Starts by resetting VF which is used for collision
-  chip8->V[0xF] = 0;
+    // Collision flag
+    bool flag = false;
 
-  for (uint8_t n = 0; n < chip8->ins.n; n++) {
-    uint8_t Ibyte = chip8->memory[chip8->I + n];
+    // DXYN Starts by resetting VF which is used for collision
+    chip8->V[0xF] = 0x0;
 
-    // Check for wrap every time we load n-more data (down)
-    uint8_t y = (Vy + n) % 32;
+    // Outer loop reads N amount of bytes (height of sprite)
+    for (uint8_t n = 0; n < chip8->ins.n; n++) {
+        uint8_t sprite = chip8->memory[chip8->I + n];
+        uint8_t bitcount = 0; // For GETBIT
 
-    // Break if we go out of bounds (clipping)
-    if ((Vy + n) >= 32) {
-        break;
+        // Bounds checking
+        if ((Vx + 7) < 63) {
+            x = Vx + 7;
+        } else {
+            x = 63;
+        }
+
+        // Start writing bytes into framebuffer starting from Vx
+        for (uint8_t lx = Vx; lx <= x; lx++) {
+            uint8_t pixel = GETBIT(sprite, bitcount);
+            bitcount++;
+
+            // Check for wrap every time we write into the framebuffer
+            uint16_t xy = (lx & 63) + ((Vy & 31) * 64);
+
+            // If a sprite collides with a pixel set VF = 1 otherwise 0
+            flag |= (pixel & chip8->framebuffer[xy]);
+
+            chip8->framebuffer[xy] ^= pixel;
+        }
+        Vy++;
     }
-    for (uint8_t bit = 0; bit < 8; bit++) {
-    // Break if we go out of bounds (clipping)
-      if ((Vx + bit) >= 64) {
-          break;
-      }
-      // Check for wrap every time we write into x + bit
-      uint8_t x = (Vx + bit) % 64;
-      uint16_t xy = x + (y * 64);
-
-      uint8_t pixel = GETBIT(Ibyte, bit);
-
-      // If a sprite collides with a pixel set VF = 1 otherwise 0
-      if (chip8->framebuffer[xy]) {
-        chip8->V[0xF] = 1;
-      }
-
-      // Set each bit into the framebuffer (in big endian)
-      chip8->framebuffer[xy] ^= pixel;
-    }
-  }
+    // Set VF to collision flag
+    chip8->V[0xF] = flag;
 }
 
 // 0xEX9E/SKP Vx: Skip next instruction if key with the value of Vx is pressed
