@@ -224,7 +224,7 @@ void Chip8_ANNN(Chip8 *chip8) {
 
 // 0xBNNN/JP V0, addr: The Program counter is set to NNN plus the value of V0
 void Chip8_BNNN(Chip8 *chip8) {
-  uint16_t jmpaddr = chip8->ins.nnn + chip8->V[(chip8->ins.nnn & 0xF00) >> 12];
+  uint16_t jmpaddr = chip8->ins.nnn + chip8->V[0];
   chip8->PC = jmpaddr;
 }
 
@@ -337,7 +337,7 @@ void Chip8_FX29(Chip8 *chip8) {
 void Chip8_FX33(Chip8 *chip8) {
   uint8_t byte = chip8->V[chip8->ins.x];
 
-  // Hundreds
+  // Ones
   chip8->memory[chip8->I + 2] = byte % 10;
   byte = (uint8_t)(byte / 10);
 
@@ -345,7 +345,7 @@ void Chip8_FX33(Chip8 *chip8) {
   chip8->memory[chip8->I + 1] = byte % 10;
   byte = (uint8_t)(byte / 10);
 
-  // Ones
+  // Hundreds
   chip8->memory[chip8->I] = byte % 10;
 }
 
