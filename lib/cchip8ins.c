@@ -279,14 +279,14 @@ void Chip8_DXYN(Chip8 *chip8) {
 // 0xEX9E/SKP Vx: Skip next instruction if key with the value of Vx is pressed
 void Chip8_EX9E(Chip8 *chip8) {
   // Increment PC by 2 if kbd.keys at Vx is true
-  if (chip8->kbd.keys[chip8->V[chip8->ins.x]]) {
+  if (chip8->kbd.keys[chip8->V[chip8->ins.x] & 0xF]) {
     chip8->PC += 2;
   }
 }
 
 void Chip8_EXA1(Chip8 *chip8) {
   // Increment PC by 2 if kbd.keys at Vx is false
-  if (!chip8->kbd.keys[chip8->V[chip8->ins.x]]) {
+  if (!chip8->kbd.keys[chip8->V[chip8->ins.x] & 0xF]) {
     chip8->PC += 2;
   }
 }
@@ -330,7 +330,7 @@ void Chip8_FX1E(Chip8 *chip8) {
 // 0xFX29/LD F, Vx:
 void Chip8_FX29(Chip8 *chip8) {
   // Set I to the character at index Vx
-  chip8->I = FONT_START + (5 * chip8->V[chip8->ins.x]);
+  chip8->I = FONT_START + (5 * (chip8->V[chip8->ins.x] & 0xF));
 }
 
 // 0xFX33/LD B, Vx: Store BCD representation of Vx in mem of I, I+1 and I+2
