@@ -9,10 +9,12 @@ if [ -z "$1" ]; then
 fi
 
 if [[ $(uname | xargs) == "Linux" ]]; then
-    make FILE="$1" run
+    make clean; make chip8; ./chip8 "$1" > out.log
     exit 0
 fi
 
 # Build for Windows
-make && ./chip8.exe "$1" > log
+make clean
+make chip8 
+./chip8.exe "$1" > out.log
 
