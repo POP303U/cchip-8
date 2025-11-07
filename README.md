@@ -36,17 +36,13 @@ pacman -S mingw-w64-x86_64-make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2
 ### Compiling
 
 > [!Caution]
-> If you are on Windows, use the MSYS2 MinGW64 Shell to execute the following commands.
+> If you are on Windows, open the MSYS2 MinGW64 Shell and execute the following commands.
 
-**Linux**
+**Windows and Linux**
 ```sh
-$ make chip8
+$ ./build # creates a statically linked binary on windows
 ```
-
-**Windows**
-```sh
-$ ./build # creates a statically linked binary
-```
+The binary and its checksum are then in the ```bin/``` folder
 
 ## Usage
 ```sh
