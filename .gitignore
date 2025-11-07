@@ -54,8 +54,8 @@ dkms.conf
 # debug information files
 *.dwo
 
-# Temp files
-unused/
+# builds
+bin/
 
 # test roms
-chip8-roms
+*.log
