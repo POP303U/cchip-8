@@ -1,6 +1,7 @@
 <div align="center">
 <h1> Chip-8 Emulator </h1>
 <h4> A Chip-8 Emulator written in C and SDL2. </h4>
+<br>
 </div>
 
 Personal attempt at emulation development, not an accurate emulator.
