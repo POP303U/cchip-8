@@ -1,10 +1,15 @@
-# Chip-8 Emulator
+<div align="center">
+<h1> Chip-8 Emulator </h1>
+<b> A Chip-8 Emulator written in C and SDL2. </b>
+</div>
 
-A Chip-8 Emulator written in C and SDL2.
-
-Personal attempt at Emulation Development, not an accurate emulator.
+Personal attempt at emulation development, not an accurate emulator.
 
 _CHIP-8 is an interpreted programming language developed by Joseph Weisbecker in the 1970s. It was made to allow video games to be more easily programmed for 8-bit microcomputers at the time, and runs on a CHIP-8 virtual machine._
+
+> [!Info]
+> This emulator is only compatible with Chip-8 roms.
+> SuperChip and XO-Chip roms are not compatible and will crash.
 
 ## Screenshots
 <img alt="chip8_tetris" src="assets/tetris.png">
@@ -14,7 +19,7 @@ _CHIP-8 is an interpreted programming language developed by Joseph Weisbecker in
 
 ### Dependencies
 
-+ **C99 Compiler**
++ **C Compiler**
   + **Linux:** GCC version 9.0+
   + **Windows:** MinGW-w64 GCC 9.0+
 
@@ -32,21 +37,21 @@ pacman -S mingw-w64-x86_64-make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2
 > [!Caution]
 > If you are on Windows, use the MSYS2 MinGW64 Shell to execute the following commands.
 
-**Linux and Windows**
+**Linux**
 ```sh
-$ make <output>
+$ make chip8
+```
+
+**Windows**
+```sh
+$ ./build # creates a statically linked binary
 ```
 
 ## Usage
 ```sh
 $ ./chip8 <rom>
 ```
-
-## Development
-To test and debug the emulator use ./build for logging:
-```sh
-./build <rom>
-```
+On Windows the binary is statically linked and executable on any system, just drag any Chip-8 compatible rom into the .exe
 
 ## Keyboard Layout:
 
