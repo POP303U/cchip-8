@@ -22,7 +22,7 @@ _CHIP-8 is an interpreted programming language developed by Joseph Weisbecker in
 
 + **C Compiler**
   + **Linux:** GCC version 9.0+
-  + **Windows:** MinGW-w64 GCC 9.0+
+  + **Windows:** [MinGW-w64](https://www.msys2.org/) GCC 9.0+
 
 + **SDL2**
   + Install for your platform: https://wiki.libsdl.org/SDL2/Installation
