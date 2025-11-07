@@ -68,14 +68,11 @@ int main(int argc, char *argv[]) {
     // Start counting ticks for frame timing
     start = SDL_GetTicks64();
 
-    // Take in keyboard input and read into an array
-    readKey(&(chip8->kbd), &event);
-
-    // Update timers, delays
-    Chip8UpdateState(chip8);
-
     // Wait until enough frames have passed to execute the next instruction
     for (int i = 0; i < INS_PER_FRAME; i++) {
+      // Take in keyboard input and read into an array
+      readKey(&(chip8->kbd), &event);
+
       // FDE Execution cycle
       Chip8FetchInstruction(chip8);
       Chip8DecodeInstruction(chip8);
@@ -87,6 +84,9 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    // Update timers, delays
+    Chip8UpdateState(chip8);
+
     // Calculate deltatime to keep running at constant speed
     delta = (MS_PER_FRAME - (SDL_GetTicks64() - start));
     if (delta > 0) {
@@ -96,7 +96,6 @@ int main(int argc, char *argv[]) {
 
     // Begin draw
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    // SDL_SetRenderDrawColor(renderer, 153, 102, 1, 1);
     SDL_RenderClear(renderer);
 
     // Draw framebuffer
@@ -110,10 +109,8 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    SDL_RenderPresent(renderer);
     // End draw
-    // printf("delta = end - start\n");
-    // printf("%f = %f - %f\n", delta, end, start);
+    SDL_RenderPresent(renderer);
   }
 
   SDL_DestroyRenderer(renderer);
