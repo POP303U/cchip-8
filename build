@@ -1,20 +1,17 @@
 #!/bin/sh
 
-# Script mostly used for Windows systems running on MINGW64
+# Script used to build statically linked binaries
 set -e
 
-if [ -z "$1" ]; then
-    echo "Usage: $0 <ROM file path>"
-    exit 1
-fi
+# Flags for static executable
+STATIC="-lmingw32 -lSDL2main -lSDL2 -mwindows -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lversion -luuid -lhid -lsetupapi -static-libgcc -static"
 
 if [[ $(uname | xargs) == "Linux" ]]; then
-    make clean; make chip8; ./chip8 "$1" > out.log
+    make clean; make chip8
     exit 0
 fi
 
 # Build for Windows
 make clean
-make chip8 
-./chip8.exe "$1" > out.log
+make "STATIC=$STATIC" chip8
 
