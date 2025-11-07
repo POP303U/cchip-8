@@ -8,7 +8,7 @@ Personal attempt at emulation development, not an accurate emulator.
 
 _CHIP-8 is an interpreted programming language developed by Joseph Weisbecker in the 1970s. It was made to allow video games to be more easily programmed for 8-bit microcomputers at the time, and runs on a CHIP-8 virtual machine._
 
-> [!Info]
+> [!Note]
 > This emulator is only compatible with Chip-8 roms.
 > SuperChip and XO-Chip roms are not compatible and will crash.
 
