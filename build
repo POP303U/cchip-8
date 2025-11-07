@@ -9,6 +9,7 @@ STATIC="-lmingw32 -lSDL2main -lSDL2 -mwindows -lm -ldinput8 -ldxguid -ldxerr8 -l
 if [[ $(uname | xargs) == "Linux" ]]; then
     make clean
     make chip8
+    mkdir bin/
     mv chip8 bin/chip8
     sha1sum bin/chip8 bin/chip8.sha1sum
     exit 0
@@ -17,5 +18,6 @@ fi
 # Build for Windows
 make clean
 make "STATIC=$STATIC" chip8
+mkdir bin/
 mv chip8.exe bin/chip8.exe
 sha1sum bin/chip8.exe > bin/chip8.exe.sha1sum
