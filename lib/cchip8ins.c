@@ -245,7 +245,7 @@ void Chip8_DXYN(Chip8 *chip8) {
   chip8->V[0xF] = 0;
 
   for (uint8_t n = 0; n < chip8->ins.n; n++) {
-    uint8_t Ibyte = chip8->memory[chip8->I + n];
+    uint8_t Ibyte = Chip8ReadMem(chip8, chip8->I + n);
 
     // Check for wrap every time we load n-more data (down)
     uint8_t y = (Vy + n) % 32;
@@ -338,21 +338,23 @@ void Chip8_FX33(Chip8 *chip8) {
   uint8_t byte = chip8->V[chip8->ins.x];
 
   // Ones
-  chip8->memory[chip8->I + 2] = byte % 10;
+  Chip8WriteMem(chip8, chip8->I + 2, byte % 10);
   byte = (uint8_t)(byte / 10);
 
   // Tens
-  chip8->memory[chip8->I + 1] = byte % 10;
+  Chip8WriteMem(chip8, chip8->I + 1, byte % 10);
   byte = (uint8_t)(byte / 10);
 
   // Hundreds
-  chip8->memory[chip8->I] = byte % 10;
+  Chip8WriteMem(chip8, chip8->I, byte % 10);
 }
 
 // 0xFX55/LD [I], Vx: Store registers V0 through Vx starting at mem location I
 void Chip8_FX55(Chip8 *chip8) {
   for (uint16_t reg = 0; reg <= chip8->ins.x; reg++) {
-    chip8->memory[chip8->I + reg] = chip8->V[reg];
+    uint16_t addr = chip8->I + reg;
+    // Check for OOB, Chip-8 does clipping
+    Chip8WriteMem(chip8, addr, chip8->V[addr]);
   }
 
   // Quirk behaviour
@@ -362,7 +364,9 @@ void Chip8_FX55(Chip8 *chip8) {
 // 0xFX65/LD Vx, [I]: Read registers V0 through Vx starting at mem location I
 void Chip8_FX65(Chip8 *chip8) {
   for (uint16_t reg = 0; reg <= chip8->ins.x; reg++) {
-    chip8->V[reg] = chip8->memory[chip8->I + reg];
+    uint16_t addr = chip8->I + reg;
+    // Check for OOB, Chip-8 does clipping
+    chip8->V[reg] = Chip8ReadMem(chip8, addr);
   }
 
   // Quirk behaviour
