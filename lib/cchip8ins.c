@@ -354,7 +354,7 @@ void Chip8_FX55(Chip8 *chip8) {
   for (uint16_t reg = 0; reg <= chip8->ins.x; reg++) {
     uint16_t addr = chip8->I + reg;
     // Check for OOB, Chip-8 does clipping
-    Chip8WriteMem(chip8, addr, chip8->V[addr]);
+    Chip8WriteMem(chip8, addr, chip8->V[reg]);
   }
 
   // Quirk behaviour
