@@ -21,6 +21,7 @@ _CHIP-8 is an interpreted programming language developed by Joseph Weisbecker in
 + **SDL2**
   + Install for your platform: https://wiki.libsdl.org/SDL2/Installation
 
+
 If you are on Windows install these packages inside of MSYS2 MinGW64.
 ```sh
 pacman -S mingw-w64-x86_64-make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2
