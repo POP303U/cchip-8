@@ -2,9 +2,10 @@ CC = gcc
 CFLAGS = -std=c99 -Wpedantic -Wall -Wextra -O2
 STATIC = "" # comes from ./build
 SRC = main.c lib/cchip8.c lib/cchip8ins.c lib/tests.c lib/font.c lib/keyboard.c
+BIN = bin/*
+OUT = chip8
 OBJ = $(SRC:.c=.o)
 LOG = $(SRC:.log)
-OUT = chip8
 
 all: $(OBJ)
 
@@ -19,4 +20,4 @@ run:
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(OUT) $(LOG)
+	rm -f $(OBJ) $(OUT) $(LOG) $(BIN)
