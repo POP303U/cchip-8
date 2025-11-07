@@ -58,8 +58,9 @@ void Chip8FetchInstruction(Chip8 *chip8) {
   chip8->ins.opcode = opcode;
 
 
-      // Debug opcodes, setting cycle count to 0 lets it run forever
-      debug(chip8, 0);
+  // Debug opcodes, setting cycle count to 0 lets it run forever
+  debug(chip8, 0);
+
   // Pre-increment PC
   chip8->PC += 2;
 }
@@ -113,6 +114,9 @@ void Chip8UpdateState(Chip8 *chip8) {
   for (int i = 0; i < KEY_COUNT; i++) {
     chip8->kbd.prevKeys[i] = chip8->kbd.keys[i];
   }
+  
+  // A frame has passed
+  chip8->frames++;
 }
 
 // Gets the index from the opcode to execute the current function needed
@@ -148,8 +152,22 @@ uint8_t Chip8GetOpcodeIndex(uint16_t opcode) {
   return 0;
 }
 
+// Protected Read into memory
+uint8_t Chip8ReadMem(Chip8 *chip8, uint16_t addr) {
+  return (addr > 0xFFF) ? 0 : chip8->memory[addr];
+}
+
+// Protected Write into memory
+void Chip8WriteMem(Chip8 *chip8, uint16_t addr, uint8_t value) {
+  if (addr > 0xFFF) {
+    return;
+  } else {
+    chip8->memory[addr] = value;
+  }
+}
+
 // Load rom into memory space starting at 0x200
-void Chip8LoadRom(struct Chip8 *chip8, uint8_t *rom, uint16_t size) {
+void Chip8LoadRom(Chip8 *chip8, uint8_t *rom, uint16_t size) {
   for (uint16_t i = ROM_START; i < (ROM_START + size); i++) {
     chip8->memory[i] = rom[i - ROM_START];
   }
