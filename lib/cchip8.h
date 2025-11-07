@@ -41,8 +41,9 @@ typedef struct Chip8 {
   // Input device
   Keyboard kbd;
 
-  // Track cycle count for debugging
+  // Track cycle/frame count for debugging
   uint64_t cycles;
+  uint64_t frames;
 
   // Memory space
   uint8_t memory[4096];
@@ -87,5 +88,9 @@ void Chip8UpdateState(Chip8 *chip8);
 // Helper function for Chip8ExecuteInstruction, gets function out of funcptr
 // table based on opcode
 uint8_t Chip8GetOpcodeIndex(uint16_t opcode);
+
+// Read/Write operations for memory usage, clips away at 0x000 < addr > 0xFFF
+uint8_t Chip8ReadMem(Chip8 *chip8, uint16_t addr);
+void Chip8WriteMem(Chip8 *chip8, uint16_t addr, uint8_t value);
 
 #endif
