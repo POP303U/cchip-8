@@ -7,7 +7,7 @@ set -e
 STATIC="-lmingw32 -lSDL2main -lSDL2 -mwindows -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lversion -luuid -lhid -lsetupapi -static-libgcc -static"
 
 if [[ $(uname | xargs) == "Linux" ]]; then
-    make clean
+    [[ $1 == "release" ]] || make clean
     make chip8
     [[ ! -e bin/ ]] && mkdir bin/
     mv chip8 bin/chip8
@@ -18,7 +18,7 @@ if [[ $(uname | xargs) == "Linux" ]]; then
 fi
 
 # Build for Windows
-make clean
+[[ $1 == "release" ]] || make clean
 make "STATIC=$STATIC" chip8
 [[ ! -e bin/ ]] && mkdir bin/
 mv chip8.exe bin/chip8.exe
