@@ -19,12 +19,13 @@ static SDL_Renderer *renderer;
 static SDL_Event event;
 
 int main(int argc, char *argv[]) {
+
   // Load game from first arg
   const char *game = argv[1];
 
   if (!game || argc < 1) {
     fprintf(stderr, "Usage: ./chip8 <ROM>");
-    exit(2);
+    return 1;
   }
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
