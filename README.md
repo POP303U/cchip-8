@@ -50,6 +50,17 @@ $ ./chip8 <rom>
 ```
 On Windows the binary is statically linked and executable on any system, just drag any Chip-8 compatible rom into the .exe
 
+### Binary Verification
+
+Each release provides a checksum file in ```bin/```
+
+Example:
+```sh
+$ sha1sum bin/<executable>
+```
+
+Compare this output with the given .sha1sum to verify file integrity
+
 ## Keyboard Layout:
 
 ### Chip8 Keypad:
