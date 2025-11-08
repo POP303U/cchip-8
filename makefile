@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -std=c99 -Wpedantic -Wall -Wextra -O2
-STATIC = "" # comes from ./build
+STATIC =  # comes from ./build
 SRC = main.c lib/cchip8.c lib/cchip8ins.c lib/tests.c lib/font.c lib/keyboard.c
 BIN = bin/*
 OUT = chip8
