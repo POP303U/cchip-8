@@ -20,4 +20,4 @@ run:
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(OUT) $(LOG) $(BIN)
+	rm -f $(OBJ) $(OUT) $(LOG) 
