@@ -8,13 +8,24 @@ Personal attempt at emulation development, not an accurate emulator.
 
 _CHIP-8 is an interpreted programming language developed by Joseph Weisbecker in the 1970s. It was made to allow video games to be more easily programmed for 8-bit microcomputers at the time, and runs on a CHIP-8 virtual machine._
 
-> [!Note]
-> This emulator is only compatible with Chip-8 roms.
-> SuperChip and XO-Chip roms are not compatible and will crash.
-
 ## Screenshots
 <img alt="chip8_tetris" src="assets/tetris.png">
 <img alt="chip8_pong2" src="assets/pong2.png">
+
+## Release Notes (alpha-0.1x)
+
+**Status:** Pre-release (functional, but not complete)
+
+**Implemented Features**
+  + Entire Chip-8 instruction set
+  + SDL2 rendering and keyboard input
+  + Support for static Windows binaries
+
+**Missing Features**
+  + Audio output
+  + Color palette switching
+  + Pausing and reset functionality
+  + SuperChip / XO-Chip support
 
 ## Building
 
@@ -54,7 +65,6 @@ On Windows the binary is statically linked and executable on any system, just dr
 
 Each release provides a checksum file in ```bin/```
 
-Example:
 ```sh
 $ sha1sum bin/<executable>
 ```
