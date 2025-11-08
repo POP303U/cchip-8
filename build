@@ -11,7 +11,9 @@ if [[ $(uname | xargs) == "Linux" ]]; then
     make chip8
     [[ ! -e bin/ ]] && mkdir bin/
     mv chip8 bin/chip8
-    sha1sum bin/chip8 > bin/chip8.sha1sum
+    if [[ $1 == "release" ]]; then
+        sha1sum bin/chip8 > bin/chip8.sha1sum
+    fi
     exit 0
 fi
 
@@ -20,4 +22,6 @@ make clean
 make "STATIC=$STATIC" chip8
 [[ ! -e bin/ ]] && mkdir bin/
 mv chip8.exe bin/chip8.exe
-sha1sum bin/chip8.exe > bin/chip8.exe.sha1sum
+if [[ $1 == "release" ]]; then
+    sha1sum bin/chip8.exe > bin/chip8.exe.sha1sum
+fi
