@@ -8,6 +8,7 @@
 #include <SDL2/SDL_render.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <math.h>
 
 #define ROM_START 0x200
 #define SCALE 20
@@ -18,9 +19,51 @@ static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_Event event;
 
-int main(int argc, char *argv[]) {
+typedef struct SquareWave {
+  double phase;
+  double frequency;
+  double sample_rate;
+  double amplitude;
+} SquareWave;
 
-  // Load game from first arg
+void audioCallback(void *userdata, uint8_t *stream, int len) {
+  SquareWave *wave = (SquareWave *)userdata;
+  uint16_t *buffer = (uint16_t *)stream;
+  int samples = len / sizeof(uint16_t);
+
+  for (int i = 0; i < samples; i++) {
+    double period = wave->sample_rate / wave->frequency;
+    double value = (fmod(wave->phase, period) < period / 2.0) ? wave->amplitude : -wave->amplitude;
+    buffer[i] = (uint16_t)value;
+
+    wave->phase += 1.0;
+    if (wave->phase >= period) wave->phase -= period;
+  }
+}
+
+int main(int argc, char *argv[]) {
+  SquareWave wave = {
+    .phase = 0.0,
+    .frequency = 444.0,
+    .sample_rate = 48000.0,
+    .amplitude = 16000.0
+  };
+  
+  SDL_AudioSpec spec = {0}, have;
+  spec.freq = (int)wave.sample_rate;
+  spec.format = AUDIO_S16SYS;
+  spec.channels = 1;
+  spec.samples = 1024;
+  spec.callback = audioCallback;
+  spec.userdata = &wave;
+
+  SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &spec, &have, 0);
+
+  if (SDL_OpenAudio(&spec, NULL) < 0) {
+      printf("SDL_OpenAudio error: %s\n", SDL_GetError());
+      return 1;
+  }
+
   const char *game = argv[1];
 
   if (!game || argc < 1) {
@@ -41,6 +84,7 @@ int main(int argc, char *argv[]) {
 
   // Set Window Titles
   SDL_SetWindowTitle(window, "Chip-8 Emulator in C and SDL2");
+
 
   // CHIP-8 STARTUP
 
@@ -71,6 +115,7 @@ int main(int argc, char *argv[]) {
 
     // Wait until enough frames have passed to execute the next instruction
     for (int i = 0; i < INS_PER_FRAME; i++) {
+
       // Take in keyboard input and read into an array
       readKey(&(chip8->kbd), &event);
 
@@ -82,6 +127,12 @@ int main(int argc, char *argv[]) {
       // Approxmiation of draw instruction, draw is very expensive so exit
       if ((chip8->ins.opcode & 0xF000) == 0xD000) {
         break;        
+      }
+
+      if (chip8->soundTimer > 0) {
+        SDL_PauseAudio(0);
+      } else {
+        SDL_PauseAudio(1);
       }
     }
 
