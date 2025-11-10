@@ -12,21 +12,6 @@ _CHIP-8 is an interpreted programming language developed by Joseph Weisbecker in
 <img alt="chip8_tetris" src="assets/tetris.png">
 <img alt="chip8_pong2" src="assets/pong2.png">
 
-## Release Notes (alpha-0.1x)
-
-**Status:** Pre-release (functional, but not complete)
-
-**Implemented Features**
-  + Entire Chip-8 instruction set
-  + SDL2 rendering and keyboard input
-  + Support for static Windows binaries
-
-**Missing Features**
-  + Audio output
-  + Color palette switching
-  + Pausing and reset functionality
-  + SuperChip / XO-Chip support
-
 ## Building
 
 ### Dependencies
