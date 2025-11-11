@@ -54,9 +54,6 @@ Chip8Audio* Chip8InitAudio() {
       exit(1);
   }
 
-  // Lower output volume
-  // ?
-
   // Start paused
   chip8Audio->initialized = true;
   SDL_PauseAudioDevice(chip8Audio->device, 1);
