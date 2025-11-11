@@ -26,4 +26,7 @@ Chip8Audio* Chip8InitAudio();
 void Chip8PlayAudio(Chip8Audio *chip8Audio);
 void Chip8PauseAudio(Chip8Audio *chip8Audio);
 
+// Cleanup function
+void Chip8DestroyAudio(Chip8Audio *chip8Audio);
+
 #endif
