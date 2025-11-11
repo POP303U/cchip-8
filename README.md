@@ -36,7 +36,7 @@ pacman -S mingw-w64-x86_64-make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2
 
 **Windows and Linux**
 ```sh
-$ ./build # creates a statically linked binary on windows
+$ ./build release # creates a statically linked binary on windows
 ```
 The binary and its checksum are then in the ```bin/``` folder
 
