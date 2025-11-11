@@ -9,7 +9,7 @@ void audioCallback(void *userdata, uint8_t *stream, int len) {
   int period = data->sampleRate / data->frequency;
 
   for (int i = 0; i < samples; i++) {
-    buffer[i] = (data->phase < period / 2 ? 3000 : -3000);
+    buffer[i] = (data->phase < period / 2 ? data->amplitude : -data->amplitude);
     data->phase++;
     if (data->phase >= period) {
       data->phase = 0;
@@ -36,7 +36,7 @@ Chip8Audio* Chip8InitAudio() {
   chip8Audio->phase = 0.0;
   chip8Audio->frequency = 329.63;      // E4 Note
   chip8Audio->sampleRate = 48000.0;    // 48khz playback
-  chip8Audio->amplitude = 16000.0;     // 50% Volume
+  chip8Audio->amplitude = 1400.0;      // 4.5%~ Volume
 
   SDL_AudioSpec desired = {0};
   desired.freq = (int)chip8Audio->sampleRate; // Samples per second
@@ -53,6 +53,9 @@ Chip8Audio* Chip8InitAudio() {
       printf("SDL_OpenAudioDevice error: %s\n", SDL_GetError());
       exit(1);
   }
+
+  // Lower output volume
+  // ?
 
   // Start paused
   chip8Audio->initialized = true;
