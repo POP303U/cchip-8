@@ -127,6 +127,8 @@ int main(int argc, char *argv[]) {
     SDL_RenderPresent(renderer);
   }
 
+  // Exit neatly
+  Chip8DestroyAudio(chip8Audio);
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
 
