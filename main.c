@@ -4,6 +4,7 @@
 #include "lib/font.h"
 #include "lib/keyboard.h"
 #include "lib/tests.h"
+#include "lib/palette.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
@@ -44,6 +45,9 @@ int main(int argc, char *argv[]) {
   // Set Window Titles
   SDL_SetWindowTitle(window, "Chip-8 Emulator in C and SDL2");
 
+  // Create palette data
+  PaletteSet *paletteSet = createPaletteSet();
+
   // Initialize audio device
   Chip8Audio *chip8Audio = Chip8InitAudio();
 
@@ -62,13 +66,22 @@ int main(int argc, char *argv[]) {
   // Initialize keyboard input
   initKeyboard(&(chip8->kbd));
 
+  // Initialize palette for drawing
+  Palette *p = &paletteSet->palettes[0];
+
   // Start cpu emulation with deltatime
   int64_t start, delta = 0;
   while (chip8->running) {
+    *p = paletteSet->palettes[chip8->currentPalette];
     SDL_PollEvent(&event);
 
     if (event.type == SDL_QUIT) {
       chip8->running = false;
+    }
+
+    // Change palette when pressing P
+    if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_P) {
+      chip8->currentPalette = (chip8->currentPalette + 1) % 4;
     }
 
     // Start counting ticks for frame timing
@@ -109,7 +122,7 @@ int main(int argc, char *argv[]) {
     delta = 0;
 
     // Begin draw
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_SetRenderDrawColor(renderer, p->bg[0], p->bg[1], p->bg[2], p->bg[3]);
     SDL_RenderClear(renderer);
 
     // Draw framebuffer
@@ -117,7 +130,7 @@ int main(int argc, char *argv[]) {
       for (int x = 0; x < FB_WIDTH; x++) {
         if (chip8->framebuffer[y * FB_WIDTH + x]) {
           SDL_Rect rect = {x * SCALE, y * SCALE, SCALE, SCALE};
-          SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+          SDL_SetRenderDrawColor(renderer, p->fg[0], p->fg[1], p->fg[2], p->fg[3]);
           SDL_RenderFillRect(renderer, &rect);
         }
       }
