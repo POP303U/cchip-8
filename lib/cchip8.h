@@ -1,7 +1,7 @@
-#include "keyboard.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "keyboard.h"
 
 #ifndef CCHIP8_H_
 #define CCHIP8_H_
@@ -34,6 +34,9 @@ typedef struct Instruction {
 typedef struct Chip8 {
   // Track if we have to stop execution
   bool running;
+
+  // Current used palette
+  size_t currentPalette;
 
   // Current executing opcode
   Instruction ins;

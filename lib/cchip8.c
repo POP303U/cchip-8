@@ -1,8 +1,7 @@
 #include "cchip8.h"
-#include "tests.h"
 #include "cchip8ins.h"
+#include "tests.h"
 #include "font.h"
-#include "keyboard.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -24,15 +23,16 @@ Chip8 *Chip8InitCpu() {
   memset(ins, 0, sizeof(Instruction));
   memset(kbd, 0, sizeof(Keyboard));
 
-  chip8->I = 0;          // Index reg
-  chip8->PC = 0x200;     // Execution starts at 0x200
-  chip8->SP = 0;         // Points to the top of the stack
-  chip8->soundTimer = 0; // Decrements each cycle by 1
-  chip8->delayReg = 0;   
-  chip8->cycles = 0;     // Track amount of cycles
-  chip8->running = 1;    // Track if chip8 is running
-  chip8->ins = *ins;     // Current instruction being executed
-  chip8->kbd = *kbd;     // Stores keyboard input
+  chip8->I = 0;              // Index reg
+  chip8->PC = 0x200;         // Execution starts at 0x200
+  chip8->SP = 0;             // Points to the top of the stack
+  chip8->soundTimer = 0;     // Decrements each cycle by 1
+  chip8->delayReg = 0;       // Used for games   
+  chip8->cycles = 0;         // Track amount of cycles
+  chip8->running = 1;        // Track if chip8 is running
+  chip8->ins = *ins;         // Current instruction being executed
+  chip8->kbd = *kbd;         // Stores keyboard input
+  chip8->currentPalette = 0; // Stores currently used palette
 
   // Load Font into memory
   for (int i = 0; i < FONTSET_SIZE; i++) {
